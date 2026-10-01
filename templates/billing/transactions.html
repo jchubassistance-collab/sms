@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions - SMS Flow</title>
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
+                            
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/pages/billing/transactions.css' %}?v=1">
+</head>
+<body>
+    <div class="transaction-shell">
+        {% include 'partials/sidebar.html' %}
+        <main class="transaction-main" data-table-tools data-export-name="transactions">
+            <header class="topbar">
+                <label class="search"><span>⌕</span><input type="search" placeholder="Rechercher une transaction..."></label>
+                {% include 'partials/user_profile.html' %}
+            </header>
+            <div class="banner">Redéfinissez l’art de la communication avec vos SMS.</div>
+            <div class="heading-row">
+                <div>
+                    <p class="kicker">TINDA</p>
+                    <h1>Transaction Paiement</h1>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Total encaissé</span>
+                    <span class="stat-value">{{ total_collected|floatformat:0 }} FCFA</span>
+                    <span class="stat-chip chip-positive">{{ successful_transactions }} paiement{{ successful_transactions|pluralize }} confirmé{{ successful_transactions|pluralize }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Transactions</span>
+                    <span class="stat-value">{{ transaction_count }}</span>
+                    <span class="stat-chip chip-info">{{ pending_transactions }} en attente</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Taux de réussite</span>
+                    <span class="stat-value">{{ success_rate|floatformat:1 }}%</span>
+                    <span class="stat-chip chip-violet">{{ failed_transactions }} échec{{ failed_transactions|pluralize }} · {{ successful_transactions }} réussite{{ successful_transactions|pluralize }}</span>
+                </div>
+            </div>
+            <section class="filters" aria-label="Filtres transactions">
+                <label class="filter-field">Période<select data-date-period><option value="all">Toutes</option><option value="week">Semaine en cours</option><option value="month">Mois en cours</option><option value="60">Derniers 60 jours</option><option value="90">Derniers 90 jours</option><option value="custom">Personnaliser</option></select></label>
+                <label class="filter-field">Mode de paiement<select data-filter-method><option value="all">Tous</option><option value="mtn">MTN MoMo</option><option value="airtel">Airtel Money</option><option value="card">Carte</option></select></label>
+                <label class="filter-field">Dates personnalisées<div class="date-range"><input class="date-input" data-date-from type="date"><input class="date-input" data-date-to type="date"></div></label>
+            </section>
+            <section class="table-card">
+                <div class="table-head">
+                    <label>Afficher <select data-page-size><option>10</option><option>25</option><option>50</option></select> éléments</label>
+                    <button class="export" type="button" data-table-export>Exporter CSV</button>
+                    <input data-table-search type="search" placeholder="⌕ ..." aria-label="Rechercher dans les transactions">
+                </div>
+                <table class="transaction-table" data-data-table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Numéro</th>
+                            <th>Coût</th>
+                            <th>Forfait</th>
+                            <th>Statut</th>
+                            <th>Id transaction</th>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Mode de paiement</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                        <tr data-row data-date="{{ transaction.created_at|date:'Y-m-d' }}" data-method="{{ transaction.payment_method|lower }}" data-search="{{ transaction.user.phone }} {{ transaction.package.name }} {{ transaction.status }} {{ transaction.payment_method }} {{ transaction.id }} {{ transaction.user.last_name }} {{ transaction.user.first_name }}">
+                            <td>{{ transaction.created_at|date:'d/m/Y' }}</td>
+                            <td>{{ transaction.user.phone }}</td>
+                            <td>{{ transaction.amount }} FCFA</td>
+                            <td>{{ transaction.package.name|default:'-' }}</td>
+                            <td><span class="status {{ transaction.status }}">{{ transaction.get_status_display }}</span></td>
+                            <td>#{{ transaction.id }}</td>
+                            <td>{{ transaction.user.last_name|default:'-' }}</td>
+                            <td>{{ transaction.user.first_name|default:'-' }}</td>
+                            <td>{{ transaction.payment_method }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr data-empty><td class="empty" colspan="9">Aucune donnée disponible dans le tableau</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="table-footer">
+                    <span data-table-info></span>
+                    <div class="pagination"><button type="button" data-page-prev disabled>Précédent</button><button type="button" data-page-next disabled>Suivant</button></div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script>
+        const sharedPackageToggle = document.getElementById('package-toggle');
+        const sharedPackageSubmenu = document.getElementById('package-submenu');
+        if (sharedPackageToggle && sharedPackageSubmenu) sharedPackageToggle.addEventListener('click', () => { const expanded = sharedPackageToggle.getAttribute('aria-expanded') === 'true'; sharedPackageToggle.setAttribute('aria-expanded', String(!expanded)); sharedPackageSubmenu.hidden = expanded; sharedPackageToggle.querySelector('b').textContent = expanded ? '⌄' : '⌃'; });
+    </script>
+    <script src="{% static 'js/table-tools.js' %}"></script>
+</body>
+</html>

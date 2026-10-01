@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique SMS - SMS Flow</title>
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/pages/campaigns/sms_history.css' %}?v=1">
+</head>
+<body>
+    <div class="page">
+        {% include 'partials/sidebar.html' %}
+        <main>
+            <header class="topbar">
+                <label class="search"><span>⌕</span><input type="search" placeholder="Rechercher..."></label>
+                {% include 'partials/user_profile.html' %}
+            </header>
+            <div class="banner">Maximisez le pouvoir fulgurant du marketing par sms et mail.</div>
+            <div class="heading-row">
+                <div><p class="kicker">B-NOTIF</p><h1>Historique SMS</h1></div>
+                <div class="date-filter"><input data-date-from type="date" aria-label="Date de debut"><input data-date-to type="date" aria-label="Date de fin"></div>
+            </div>
+            <section class="table-panel" data-table-tools data-export-name="historique-sms">
+                <div class="table-toolbar">
+                    <label class="show-count">Afficher <select data-page-size><option>10</option><option>25</option></select> éléments</label>
+                    <div class="toolbar-actions"><button class="export" type="button" data-table-export>Exporter CSV</button><input class="table-search" data-table-search type="search" placeholder="⌕ ..." aria-label="Rechercher dans l'historique"></div>
+                </div>
+                <div class="table-wrap">
+                    <table data-data-table>
+                        <thead><tr><th>Date d'envoi</th><th>Statut</th><th>Destinataire</th><th>Message</th><th>Expéditeur</th><th>Service</th><th>D. réception</th></tr></thead>
+                        <tbody>
+                            {% for log in sms_logs %}
+                            <tr data-row data-date="{{ log.sent_at|date:'Y-m-d' }}" data-search="{{ log.recipient.name }} {{ log.recipient.phone }} {{ log.recipient_phone }} {{ log.campaign.message }} {{ log.status }}"><td>{{ log.sent_at|date:'d/m/Y H:i' }}</td><td><span class="status{% if log.status != 'sent' %} pending{% endif %}">{{ log.status }}</span></td><td>{{ log.recipient.phone|default:log.recipient_phone|default:'-' }}</td><td>{{ log.campaign.message|default:'-' }}</td><td>{{ sender_name }}</td><td>{{ log.provider }}</td><td>{% if log.delivery_received_at %}{{ log.delivery_received_at|date:'d/m/Y H:i' }}{% else %}Non remontée{% endif %}</td></tr>
+                            {% empty %}
+                                <tr data-empty><td class="empty" colspan="7"><strong>Aucun envoi enregistré depuis cette application.</strong><br>Les SMS envoyés directement depuis le portail Tinda ne sont pas synchronisés automatiquement.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <footer class="table-footer"><span data-table-info></span><div class="pagination"><button type="button" data-page-prev disabled>Précédent</button><button type="button" data-page-next disabled>Suivant</button></div></footer>
+            </section>
+        </main>
+    </div>
+    <script src="{% static 'js/table-tools.js' %}"></script>
+</body>
+</html>

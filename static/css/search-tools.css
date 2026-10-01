@@ -1,0 +1,30 @@
+/* Shared search control appearance across all authenticated pages. */
+.search,
+.list-search,
+.table-search,
+[data-table-search],
+.reference-tools input[type="search"] {
+    box-sizing: border-box;
+    min-width: 0;
+    height: 42px;
+    border: 1px solid rgba(146, 168, 206, .42);
+    border-radius: 12px;
+    color: #344b73;
+    background: #fff;
+    font: inherit;
+    transition: border-color .16s ease, box-shadow .16s ease;
+}
+.search { border-radius: 12px; }
+.search:focus-within,
+.list-search:focus,
+.table-search:focus,
+[data-table-search]:focus,
+.reference-tools input[type="search"]:focus {
+    border-color: #d8324d;
+    box-shadow: 0 0 0 3px rgba(216, 50, 77, .12);
+    outline: 0;
+}
+.search input { height: 100%; }
+.list-search { width: 100%; padding: 0 14px; }
+.table-search, [data-table-search], .reference-tools input[type="search"] { padding: 0 12px; }
+input[type="search"]::placeholder { color: #8995a6; opacity: 1; }

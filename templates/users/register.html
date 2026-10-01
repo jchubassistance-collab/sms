@@ -1,0 +1,175 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
+    <title>Créer un compte - SMS Flow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pages/users/register.css' %}?v=1">
+ </head>
+<body class="auth-page registration-page">
+    <main class="register-page">
+        <div class="brand">
+            <div class="brand-icon" aria-label="Compte utilisateur">&#128100;</div>
+            <div class="brand-copy">
+                <span>SMS PLATFORM</span>
+                <h1>Créez votre espace</h1>
+                <p>Créez votre compte et communiquez avec les personnes qui comptent.</p>
+            </div>
+        </div>
+        <form method="post" class="form-stack" novalidate>
+            {% csrf_token %}
+            <div class="rule"><span>Espace de gestion</span></div>
+            <h1>CRÉER UN COMPTE</h1>
+            <div class="steps" aria-label="Étapes de l’inscription">
+                <div class="step active" data-step="1"><div class="step-number">1</div><div class="step-label">Étape 1</div></div>
+                <div class="step" data-step="2"><div class="step-number">2</div><div class="step-label">Étape 2</div></div>
+                <div class="step" data-step="3"><div class="step-number">3</div><div class="step-label">Étape 3</div></div>
+            </div>
+            <section class="step-panel" data-panel="1">
+            <div class="field"><span class="field-icon">&#9742;</span><input type="tel" name="phone" placeholder="242 06..." value="{{ form.phone.value|default:'242' }}" pattern="242[0-9]{9}" inputmode="tel" required></div>
+            {% for error in form.phone.errors %}<p class="field-errors">{{ error }}</p>{% endfor %}
+            <div class="field"><span class="field-icon">&#9993;</span><input type="email" name="email" placeholder="Saisissez votre adresse e-mail" value="{{ form.email.value|default:'' }}" required></div>
+            {% for error in form.email.errors %}<p class="field-errors">{{ error }}</p>{% endfor %}
+            <div class="verify-row"><button class="verify-btn" type="button">&#9742; Vérifier</button></div>
+            <div class="otp-row" hidden>
+                <div class="field"><span class="field-icon">&#128273;</span><input type="text" name="otp_code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="Code à 6 chiffres"></div>
+            </div>
+            <p class="otp-status" aria-live="polite"></p>
+            <div class="field"><span class="field-icon">&#9678;</span><select name="locality" required><option value="" disabled {% if not form.locality.value %}selected{% endif %}>Choisissez votre département</option>{% for department in departments %}<option value="{{ department.name }}" {% if form.locality.value == department.name %}selected{% endif %}>{{ department.name }}</option>{% endfor %}</select><span class="select-arrow">&#9662;</span></div>
+            {% for error in form.locality.errors %}<p class="field-errors">{{ error }}</p>{% endfor %}
+            <div class="field"><span class="field-icon">&#9678;</span><select name="arrondissement" id="arrondissement" required disabled><option value="" selected>Choisissez votre arrondissement</option></select><span class="select-arrow">&#9662;</span></div>
+            {% for error in form.arrondissement.errors %}<p class="field-errors">{{ error }}</p>{% endfor %}
+            <button class="submit-btn next-btn" type="button" disabled>Continuer</button>
+            </section>
+            <section class="step-panel" data-panel="2" hidden>
+                <div class="field"><span class="field-icon">&#127970;</span><input type="text" name="company_name" placeholder="Saisissez le nom de votre entreprise" value="{{ form.company_name.value|default:'' }}" required></div>
+                <div class="field"><span class="field-icon">&#8962;</span><input type="text" name="company_address" placeholder="Saisissez l’adresse de votre entreprise" value="{{ form.company_address.value|default:'' }}" required></div>
+                <div class="field"><span class="field-icon">&#9786;</span><input type="text" name="last_name" placeholder="Saisissez votre nom" value="{{ form.last_name.value|default:'' }}" required></div>
+                <div class="field"><span class="field-icon">&#9786;</span><input type="text" name="first_name" placeholder="Saisissez votre prénom" value="{{ form.first_name.value|default:'' }}" required></div>
+                <div class="field"><span class="field-icon">&#128197;</span><input type="date" name="birth_date" value="{{ form.birth_date.value|default:'' }}" required></div>
+                <button class="submit-btn second-next-btn" type="button">Continuer</button>
+            </section>
+            <section class="step-panel" data-panel="3" hidden>
+                <div class="field"><span class="field-icon">&#9786;</span><select name="civility" required><option value="" disabled {% if not form.civility.value %}selected{% endif %}>Choisissez votre civilité</option><option value="Mr" {% if form.civility.value == 'Mr' %}selected{% endif %}>M.</option><option value="Mrs" {% if form.civility.value == 'Mrs' %}selected{% endif %}>Mme</option><option value="Ms" {% if form.civility.value == 'Ms' %}selected{% endif %}>Mlle</option></select><span class="select-arrow">&#9662;</span></div>
+                <div class="field"><span class="field-icon">&#9881;</span><select name="activity_sector" required><option value="" disabled {% if not form.activity_sector.value %}selected{% endif %}>Choisissez votre secteur d’activité</option><option value="Technology" {% if form.activity_sector.value == 'Technology' %}selected{% endif %}>Technologie</option><option value="Commerce" {% if form.activity_sector.value == 'Commerce' %}selected{% endif %}>Commerce</option><option value="Finance" {% if form.activity_sector.value == 'Finance' %}selected{% endif %}>Finance</option><option value="Services" {% if form.activity_sector.value == 'Services' %}selected{% endif %}>Services</option><option value="Other" {% if form.activity_sector.value == 'Other' %}selected{% endif %}>Autre</option></select><span class="select-arrow">&#9662;</span></div>
+                <div class="field"><span class="field-icon">&#128274;</span><input type="password" name="password" placeholder="Saisissez votre mot de passe" required></div>
+                <div class="field"><span class="field-icon">&#128274;</span><input type="password" name="password_confirm" placeholder="Confirmez votre mot de passe" required></div>
+                <button class="submit-btn" type="submit">Créer le compte</button>
+            </section>
+        </form>
+        <div class="rule login-rule"><span>Vous avez déjà un compte  ?</span></div>
+        <a class="login-link" href="{% url 'login' %}">&#128274; Se connecter</a>
+    </main>
+    {{ departments_data|json_script:"departments-data" }}
+    <script>
+        const nextButton = document.querySelector('.next-btn');
+        const firstPanel = document.querySelector('[data-panel="1"]');
+        const secondPanel = document.querySelector('[data-panel="2"]');
+        const thirdPanel = document.querySelector('[data-panel="3"]');
+        const firstStep = document.querySelector('[data-step="1"]');
+        const secondStep = document.querySelector('[data-step="2"]');
+        const thirdStep = document.querySelector('[data-step="3"]');
+        const phoneInput = document.querySelector('[name="phone"]');
+        const verifyButton = document.querySelector('.verify-btn:not(.confirm-otp-btn)');
+        const otpRow = document.querySelector('.otp-row');
+        const otpInput = document.querySelector('[name="otp_code"]');
+        const otpStatus = document.querySelector('.otp-status');
+        let otpVerified = false;
+        phoneInput.addEventListener('input', () => {
+            const digits = phoneInput.value.replace(/\D/g, '').replace(/^242/, '');
+            phoneInput.value = `242${digits}`;
+        });
+        const localitySelect = document.querySelector('[name="locality"]');
+        const arrondissementSelect = document.querySelector('#arrondissement');
+        const departmentsData = JSON.parse(document.getElementById('departments-data').textContent);
+        const arrondissementOptions = Object.fromEntries(departmentsData.map((department) => [department.name, department.arrondissements]));
+
+        localitySelect.addEventListener('change', () => {
+            const options = arrondissementOptions[localitySelect.value] || [];
+            arrondissementSelect.innerHTML = '<option value="" selected>Choisissez votre arrondissement</option>';
+            options.forEach((arrondissement) => {
+                const option = document.createElement('option');
+                option.value = arrondissement;
+                option.textContent = arrondissement;
+                arrondissementSelect.appendChild(option);
+            });
+            arrondissementSelect.disabled = options.length === 0;
+        });
+
+        verifyButton.addEventListener('click', async () => {
+            phoneInput.dispatchEvent(new Event('input'));
+            if (!/^242\d{9}$/.test(phoneInput.value)) {
+                phoneInput.setCustomValidity('Saisissez 9 chiffres après le préfixe 242.');
+                phoneInput.reportValidity();
+                return;
+            }
+            phoneInput.setCustomValidity('');
+            if (!phoneInput.value.trim()) {
+                phoneInput.focus();
+                return;
+            }
+            const response = await fetch('{% url "send-otp" %}', {
+                method: 'POST',
+                headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value, 'Content-Type': 'application/x-www-form-urlencoded'},
+                body: new URLSearchParams({phone: phoneInput.value.trim()}),
+            });
+            const data = await response.json();
+            otpStatus.textContent = data.message || data.error;
+            if (response.ok) otpRow.hidden = false;
+        });
+
+        async function verifyOtp() {
+            const response = await fetch('{% url "verify-otp" %}', {
+                method: 'POST',
+                headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value, 'Content-Type': 'application/x-www-form-urlencoded'},
+                body: new URLSearchParams({phone: phoneInput.value.trim(), code: otpInput.value.trim()}),
+            });
+            const data = await response.json();
+            otpVerified = response.ok;
+            nextButton.disabled = !otpVerified;
+            otpStatus.textContent = data.message || data.error;
+        }
+
+        otpInput.addEventListener('input', () => {
+            otpInput.value = otpInput.value.replace(/\D/g, '').slice(0, 6);
+            if (otpInput.value.length === 6) verifyOtp();
+        });
+
+        nextButton.addEventListener('click', () => {
+            const invalidField = firstPanel.querySelector('input:invalid, select:invalid');
+            if (invalidField) {
+                invalidField.focus();
+                return;
+            }
+            if (!otpVerified) {
+                otpStatus.textContent = 'Confirm the OTP before continuing.';
+                return;
+            }
+            firstPanel.hidden = true;
+            secondPanel.hidden = false;
+            firstStep.classList.remove('active');
+            firstStep.classList.add('completed');
+            secondStep.classList.add('active');
+        });
+
+        document.querySelector('.second-next-btn').addEventListener('click', () => {
+            const invalidField = secondPanel.querySelector('input:invalid, select:invalid');
+            if (invalidField) {
+                invalidField.focus();
+                return;
+            }
+            secondPanel.hidden = true;
+            thirdPanel.hidden = false;
+            secondStep.classList.remove('active');
+            secondStep.classList.add('completed');
+            thirdStep.classList.add('active');
+        });
+    </script>
+</body>
+</html>

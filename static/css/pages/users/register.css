@@ -1,0 +1,50 @@
+* { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background-color: #111827;
+            background-image: url('/static/images/back.jpg');
+            background-position: center center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        body::before { content: ''; position: fixed; inset: 0; background: rgba(0,0,0,.22); backdrop-filter: blur(2px); }
+    .register-page { position: relative; z-index: 1; width: min(82vw, 440px); margin: 0 auto; padding: 25px 0 30px; }
+    .brand { text-align: center; margin-bottom: 14px; }
+    .brand-icon { width: 72px; height: 72px; margin: 0 auto; display: grid; place-items: center; border: 2px solid rgba(255,255,255,.78); border-radius: 22px; background: rgba(255,255,255,.12); color: #fff; font-size: 2.3rem; box-shadow: 0 8px 20px rgba(0,0,0,.2); }
+    .rule { display: flex; align-items: center; gap: 13px; color: rgba(255,255,255,.86); margin: 14px 0 20px; }
+    .rule::before, .rule::after { content: ''; height: 1px; flex: 1; background: rgba(255,255,255,.45); }
+    .rule span { font-size: 14px; white-space: nowrap; }
+    h1 { margin: 0 0 22px; text-align: center; font-size: 20px; letter-spacing: .2px; }
+    .steps { display: flex; align-items: flex-start; margin-bottom: 25px; }
+    .step { flex: 1; text-align: center; position: relative; }
+    .step:not(:last-child)::after { content: ''; position: absolute; z-index: -1; top: 27px; left: 50%; width: 100%; height: 5px; background: rgba(255,255,255,.18); }
+    .step-number { width: 62px; height: 62px; margin: 0 auto 8px; display: grid; place-items: center; border: 7px solid rgba(255,255,255,.18); border-radius: 50%; background: rgba(255,255,255,.08); color: rgba(255,255,255,.62); font-size: 20px; }
+    .step.active .step-number { border-color: #3ea2ff; color: #fff; }
+    .step.completed .step-number { border-color: #2bd4a7; color: #fff; }
+    .step-label { color: rgba(255,255,255,.62); font-size: 14px; }
+    .step.active .step-label { color: #fff; }
+    .form-stack { display: grid; gap: 18px; }
+    .step-panel { display: grid; gap: 18px; }
+    .field { position: relative; }
+    .field-icon { position: absolute; left: 17px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,.9); font-size: 19px; }
+    .field input, .field select { width: 100%; height: 50px; padding: 0 18px 0 50px; border: 2px solid rgba(255,255,255,.72); border-radius: 999px; outline: none; background: rgba(255,255,255,.08); color: #fff; font: 15px 'Inter', Arial, sans-serif; backdrop-filter: blur(4px); }
+    .field input:focus, .field select:focus { border-color: #3ea2ff; box-shadow: 0 0 0 2px rgba(62,162,255,.18); }
+    .field input::placeholder { color: rgba(255,255,255,.7); }
+    .field select { appearance: none; cursor: pointer; }
+    .field select option { background: #202b3b; color: #fff; }
+    .select-arrow { position: absolute; right: 19px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,.8); pointer-events: none; }
+    .field-errors { margin: -6px 0 0; color: #ffd0d0; font-size: 12px; }
+    .verify-row { display: flex; justify-content: flex-end; margin-top: -8px; }
+    .verify-btn { height: 34px; padding: 0 14px; border: 1px solid rgba(255,255,255,.72); border-radius: 999px; background: rgba(255,255,255,.08); color: #fff; font: 500 14px 'Inter', Arial, sans-serif; cursor: pointer; }
+    .verify-btn:hover { border-color: #3ea2ff; background: rgba(62,162,255,.18); }
+    .otp-row { display: block; }
+    .otp-status { margin: -8px 0 0; color: rgba(255,255,255,.82); font-size: 12px; }
+    .submit-btn, .login-link { width: 100%; height: 50px; display: flex; align-items: center; justify-content: center; border: none; border-radius: 14px; background: linear-gradient(135deg, #1e9fff, #1a82ff); color: #fff; font: 600 16px 'Inter', Arial, sans-serif; text-decoration: none; cursor: pointer; }
+    .submit-btn { margin-top: 5px; box-shadow: 0 10px 20px rgba(30,123,255,.3); }
+    .submit-btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+    .step-panel[hidden] { display: none; }
+    .login-rule { margin: 27px 0 10px; }
+        .login-link { background: linear-gradient(135deg, #2b2f36, #1e232a); box-shadow: none; }
+        @media (max-width: 420px) { .register-page { width: min(88vw, 440px); } h1 { font-size: 18px; } .step-number { width: 56px; height: 56px; } .step:not(:last-child)::after { top: 24px; } }

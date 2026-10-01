@@ -1,0 +1,255 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord - SMS Flow</title>
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { brand: '#d9585b', ink: '#344b73' },
+                },
+            },
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{% static 'css/pages/users/dashboard.css' %}?v=1">
+</head>
+
+<body class="dashboard-page">
+    <div class="reference-app min-h-screen flex bg-slate-100">
+        {% include 'partials/sidebar.html' %}
+        <aside class="reference-side">
+            <div class="reference-brand"><strong>SMS</strong>FLOW <span></span></div>
+            <div class="reference-label">TABLEAU DE BORD</div>
+            <nav class="reference-nav"><a class="active" href="{% url 'dashboard' %}" ><span
+                        class="nav-icon">⌂</span>Tableau de bord</a></nav>
+            <div class="reference-label">FORFAIT</div>
+            <nav class="reference-nav"><button class="reference-toggle" id="package-toggle" type="button"
+                    aria-expanded="false" aria-controls="package-submenu"><span class="nav-icon">▣</span >ACHAT DE FORFAIT
+                    <span class="reference-caret">⌄</span></button></nav>
+            <nav class="reference-sub" id="package-submenu" hidden><a href="#packages"><span
+                        class="nav-icon">▣</span>Acheter Forfait</a><a href="/api/billing/transactions/"><span
+                        class="nav-icon">▤</span>Transactions</a></nav>
+            <div class="reference-label" >CONTACTS</div>
+            <nav class="reference-nav"><a href="/api/contacts/"><span class="nav-icon">⌕</span>CONTACTS <span
+                        class="reference-caret">⌄</span></a></nav>
+            <div class="reference-label">B-NOTIF</div>
+            <nav class="reference-nav"><a href="/api/campaigns/"><span class="nav-icon">✉</span>MESSAGES <span
+                        class="reference-caret">⌄</span></a></nav>
+            <div class="reference-label">B-PLANIFICATION</div>
+            <nav class="reference-nav"><a href="#scheduled"><span class="nav-icon">◷</span>Message planifié <span
+                        class="reference-caret">⌄</span></a></nav>
+            <div class="reference-label">RAPPORTS</div>
+            <nav class="reference-nav"><a href="#history"><span class="nav-icon">◴</span>Historique des envois</a></nav>
+            <div class="reference-label">SUPPORT CLIENT</div>
+            <nav class="reference-nav"><a href="/api/support/"><span class="nav-icon">?</span>Support Client</a></nav>
+            <div class="dashboard-sidebar-spacer" aria-hidden="true"></div>
+            <nav class="reference-nav"><a href="{% url 'login' %}"><span class="nav-icon">↪</span>Déconnexion</a></nav>
+        </aside>
+        <main class="reference-content">
+            <header class="reference-top"><label class="search"><span>⌕</span><input type="search"
+                        placeholder="Rechercher..."></label>
+                {% include 'partials/user_profile.html' %}
+            </header>
+            <div class="reference-banner">Maximisez le pouvoir fulgurant du marketing par SMS et e-mail.</div>
+            <p class="reference-kicker">TABLEAU DE BORD B-NOTIF</p>
+            <h1 class="reference-heading">Tableau de bord</h1>
+            <section class="reference-cards" aria-label="Statistiques du tableau de bord">
+                <article class="reference-card">
+                    <h3>SMS envoyés</h3><strong>{{ sent_count }}</strong><small>Total</small><svg viewBox="0 0 300 70" preserveAspectRatio="none">
+                        <path d="M0 62 C80 62 150 66 220 46 S270 21 300 10 L300 70 L0 70Z" fill="#e3f0ff"></path>
+                        <path d="M0 62 C80 62 150 66 220 46 S270 21 300 10" fill="none" stroke="#1682ff"
+                            stroke-width="2"></path>
+                    </svg>
+                </article>
+                <article class="reference-card">
+                    <h3>SMS en attente</h3><strong>{{ pending_count }}</strong><small>Total</small><svg viewBox="0 0 300 70" preserveAspectRatio="none">
+                        <path d="M0 63 C48 26 83 12 120 49 S177 50 210 28 S267 23 300 27 L300 70 L0 70Z" fill="#e5f8ef">
+                        </path>
+                        <path d="M0 63 C48 26 83 12 120 49 S177 50 210 28 S267 23 300 27" fill="none" stroke="#18c681"
+                            stroke-width="2"></path>
+                    </svg>
+                </article>
+                <article class="reference-card">
+                    <h3>Solde</h3><strong>{{ sms_balance }}</strong><small>SMS crédités</small><svg viewBox="0 0 300 70" preserveAspectRatio="none">
+                        <path d="M0 22 C80 19 110 22 145 51 S202 30 250 21 S278 23 300 24 L300 70 L0 70Z"
+                            fill="#fff4d9"></path>
+                        <path d="M0 22 C80 19 110 22 145 51 S202 30 250 21 S278 23 300 24" fill="none" stroke="#ffae00"
+                            stroke-width="2"></path>
+                    </svg>
+                </article>
+                <article class="reference-card">
+                    <h3>E-mails envoyés</h3><strong>—</strong><small>Non suivis</small><svg viewBox="0 0 300 70" preserveAspectRatio="none">
+                        <path d="M0 61 C100 62 130 60 170 35 S240 25 300 53 L300 70 L0 70Z" fill="#ffe7ee"></path>
+                        <path d="M0 61 C100 62 130 60 170 35 S240 25 300 53" fill="none" stroke="#ff4a6e"
+                            stroke-width="2"></path>
+                    </svg>
+                </article>
+                <article class="reference-card">
+                    <h3>E-mails en attente</h3><strong>—</strong><small>Non suivis</small><svg viewBox="0 0 300 70" preserveAspectRatio="none">
+                        <path d="M0 62 C100 62 135 60 175 39 S230 21 300 51 L300 70 L0 70Z" fill="#fff0df"></path>
+                        <path d="M0 62 C100 62 135 60 175 39 S230 21 300 51" fill="none" stroke="#ff7900"
+                            stroke-width="2"></path>
+                    </svg>
+                </article>
+                <article class="reference-card">
+                    <h3>Contacts</h3><strong>{{ contact_count }}</strong><small>Total</small><svg viewBox="0 0 300 70" preserveAspectRatio="none">
+                        <path d="M0 64 C75 63 100 55 150 40 S240 25 300 20 L300 70 L0 70Z" fill="#edf0f3"></path>
+                        <path d="M0 64 C75 63 100 55 150 40 S240 25 300 20" fill="none" stroke="#69717d"
+                            stroke-width="2"></path>
+                    </svg>
+                </article>
+            </section>
+            <section class="dashboard-tools" aria-label="Actions rapides et solde">
+                <div class="quick-actions">
+                    <h2>Actions rapides</h2>
+                    <div class="quick-action-list">
+                        <a class="quick-action" href="{% url 'simple-message' %}">✉ Envoyer un SMS</a>
+                        <a class="quick-action" href="{% url 'bulk-mail' %}">@ Envoyer un mail</a>
+                        <a class="quick-action" href="{% url 'contacts-page' %}">+ Ajouter un contact</a>
+                    </div>
+                </div>
+                <div class="balance-summary">
+                    <div>
+                        <h2>Solde disponible</h2>
+                        <strong>{{ sms_balance }}</strong>
+                        <small>Crédit SMS</small>
+                    </div>
+                    <a href="{% url 'package-store' %}">Gérer mon forfait →</a>
+                </div>
+            </section>
+            <section class="reference-actions">
+                <h2>Actions récentes <span class="dashboard-section-toggle">−</span></h2>
+                <div class="reference-tools"><span>Afficher <select>
+                            <option>10</option>
+                            <option>25</option>
+                        </select> éléments</span><input type="search" placeholder="⌕ ..."></div>
+                <table class="reference-table">
+                    <thead>
+                        <tr>
+                            <th>Opération</th>
+                            <th>Date</th>
+                            <th>Type/Catégorie</th>
+                            <th>Valeur</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activity in recent_activity %}
+                        <tr>
+                            <td>{{ activity.operation }}</td>
+                            <td>{{ activity.date|date:'d/m/Y H:i' }}</td>
+                            <td>{{ activity.category }}</td>
+                            <td>{% if activity.is_amount %}{{ activity.value|floatformat:0 }}{% else %}{{ activity.value }}{% endif %}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">Aucune activité enregistrée</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="reference-footer"><span>Affichage de 0 à {{ recent_activity|length }} sur {{ activity_count }} éléments</span>
+                    <div class="reference-pagination"><button type="button" disabled>Précédent</button><button
+                            type="button" disabled>Suiv</button></div>
+                </div>
+            </section>
+        </main>
+    </div>
+    {{ chart_labels|json_script:"dashboard-chart-labels" }}
+    {{ sent_monthly_counts|json_script:"dashboard-sent-counts" }}
+    {{ pending_monthly_counts|json_script:"dashboard-pending-counts" }}
+    <script>
+        if (typeof Chart !== 'undefined') {
+            const chartRow = document.createElement('section');
+            chartRow.className = 'dashboard-charts';
+            chartRow.innerHTML = '<article class="chart-panel"><h2>Activite SMS</h2><canvas id="sms-activity-chart" aria-label="SMS activity chart"></canvas></article><article class="chart-panel"><h2>Repartition de la plateforme</h2><canvas id="platform-mix-chart" aria-label="Platform mix chart"></canvas></article>';
+            document.querySelector('.reference-actions').before(chartRow);
+
+            new Chart(document.getElementById('sms-activity-chart'), {
+                type: 'line',
+                data: {
+                    labels: JSON.parse(document.getElementById('dashboard-chart-labels').textContent),
+                    datasets: [{
+                        label: 'SMS envoyés',
+                        data: JSON.parse(document.getElementById('dashboard-sent-counts').textContent),
+                        borderColor: '#EE3F59',
+                        backgroundColor: 'rgba(238,63,89,.12)',
+                        pointBackgroundColor: '#EE3F59',
+                        pointRadius: 4,
+                        pointHoverRadius: 5,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.45,
+                    }, {
+                        label: 'SMS en attente',
+                        data: JSON.parse(document.getElementById('dashboard-pending-counts').textContent),
+                        borderColor: '#c92f48',
+                        backgroundColor: 'transparent',
+                        pointBackgroundColor: '#c92f48',
+                        pointRadius: 3,
+                        pointHoverRadius: 4,
+                        borderWidth: 2,
+                        tension: 0.4,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 7, color: '#53657d' } }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#edf2f0' },
+                            ticks: { color: '#70829c' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#70829c' }
+                        }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('platform-mix-chart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Contacts', 'Campagnes', 'SMS en attente'],
+                    datasets: [{
+                        data: [{{ contact_count|default:0 }}, {{ campaign_count|default:0 }}, {{ pending_count|default:0 }}],
+                        backgroundColor: ['#EE3F59', '#c92f48', '#f26a7e'],
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '68%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 7, color: '#53657d' } }
+                    }
+                }
+            });
+        }
+
+        document.querySelectorAll('a[href="#packages"]').forEach((link) => {
+            link.href = '{% url "package-store" %}';
+        });
+
+    </script>
+    <link rel="stylesheet" href="{% static 'css/search-tools.css' %}?v=1">
+    <script src="{% static 'js/search-tools.js' %}?v=1"></script>
+</body>
+
+</html>

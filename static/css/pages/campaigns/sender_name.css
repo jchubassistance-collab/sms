@@ -1,0 +1,45 @@
+:root {
+            --ink: #243451;
+            --muted: #71809a;
+            --line: #e2e9f3;
+            --accent: #EE3F59;
+            --accent-deep: #d92f4b;
+            --paper: rgba(255,255,255,.92);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 78% 0%, rgba(238,63,89,.12), transparent 27%),
+                linear-gradient(135deg, #f3f6fc 0%, #eef2f8 55%, #fffaf0 100%);
+            font: 14px Inter, Arial, sans-serif;
+        }
+        .page { min-height: 100vh; display: flex; }
+        main { min-width: 0; flex: 1; padding: 20px 28px 48px; }
+        .topbar { height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+        .search { width: 320px; height: 42px; display: flex; align-items: center; gap: 9px; padding: 0 14px; border: 1px solid rgba(126,153,198,.3); border-radius: 15px; color: #9aa9bd; background: rgba(255,255,255,.86); box-shadow: 0 12px 28px rgba(45,74,122,.07); }
+        .search input { width: 100%; border: 0; outline: 0; color: var(--ink); background: transparent; font: inherit; font-size: 12px; }
+        .profile { display: flex; align-items: center; gap: 9px; padding: 7px 12px 7px 8px; border: 1px solid rgba(126,153,198,.22); border-radius: 14px; color: #61718b; background: rgba(255,255,255,.74); font-size: 12px; }
+        .avatar { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: linear-gradient(135deg, #2f6fed, #c92f48); font-weight: 800; }
+        .banner { min-height: 92px; display: grid; place-items: center start; margin-bottom: 24px; padding: 20px 28px; border-radius: 22px; color: #fff; background: linear-gradient(120deg, #EE3F59 0%, #d92f4b 52%, #a9233d 100%); box-shadow: 0 20px 36px rgba(238,63,89,.22); font-size: 20px; font-weight: 800; }
+        .kicker { margin: 0 0 6px; color: #7788a5; font-size: 10px; font-weight: 800; letter-spacing: 2px; }
+        h1 { margin: 0 0 24px; color: var(--ink); font-size: clamp(1.8rem, 2.5vw, 2.35rem); letter-spacing: -.7px; }
+        .layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(270px, .72fr); gap: 24px; align-items: start; }
+        .panel { overflow: hidden; border: 1px solid rgba(146,168,206,.26); border-radius: 18px; background: var(--paper); box-shadow: 0 18px 38px rgba(46,76,124,.1); }
+        .panel-title { padding: 16px 18px; color: #fff; background: linear-gradient(120deg, #EE3F59, #d92f4b 58%, #a9233d); font-size: 14px; font-weight: 800; }
+        .form-body { display: grid; gap: 24px; padding: 26px 25px 22px; }
+        label { display: grid; gap: 10px; color: #65748d; font-size: 12px; font-weight: 600; }
+        input, textarea { width: 100%; border: 1px solid var(--line); border-radius: 5px; outline: 0; color: var(--ink); background: #fff; font: inherit; font-size: 13px; }
+        input { height: 38px; padding: 0 12px; max-width: 330px; }
+        textarea { min-height: 112px; padding: 12px; resize: vertical; }
+        input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(238,63,89,.16); }
+        .file-field { display: flex; max-width: 330px; height: 38px; border: 1px solid var(--line); border-radius: 5px; overflow: hidden; background: #fff; }
+        .file-field input { height: 100%; min-width: 0; border: 0; border-radius: 0; box-shadow: none; }
+        .file-button { display: grid; place-items: center; min-width: 90px; color: #64748b; background: #eef1f5; font-size: 12px; cursor: pointer; }
+        .file-button input { display: none; }
+        .submit { width: max-content; padding: 11px 18px; border: 0; border-radius: 6px; color: #fff; background: linear-gradient(135deg, var(--accent), #c92f48); font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; box-shadow: 0 10px 18px rgba(238,63,89,.2); }
+        .submit:hover { background: linear-gradient(135deg, var(--accent-deep), #a9233d); }
+        .history-body { min-height: 78px; padding: 18px; color: #8b98aa; font-size: 12px; }
+        @media (max-width: 780px) { .layout { grid-template-columns: 1fr; } main { padding: 18px; } }
+        @media (max-width: 560px) { .page { display: block; } main { padding: 14px; } .topbar { height: auto; align-items: stretch; flex-direction: column; } .search { width: 100%; } .profile { width: max-content; } .banner { min-height: 110px; padding: 20px; font-size: 17px; } .form-body { padding: 20px 16px; } input, .file-field { max-width: none; } }

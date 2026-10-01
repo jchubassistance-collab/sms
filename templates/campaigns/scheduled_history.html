@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique transaction SMS - SMS Flow</title>
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/pages/campaigns/scheduled_history.css' %}?v=1">
+</head>
+<body>
+    <div class="page">
+        {% include 'partials/sidebar.html' %}
+        <main>
+            <header class="topbar">
+                <label class="search"><span>⌕</span><input type="search" placeholder="Rechercher..."></label>
+                {% include 'partials/user_profile.html' %}
+            </header>
+            <div class="banner">Maximisez le pouvoir fulgurant du marketing par sms et mail.</div>
+            <div class="heading-row">
+                <div><p class="kicker">B-NOTIF</p><h1>Historique transaction SMS</h1></div>
+                <div class="date-filter"><input data-date-from type="date" aria-label="Date de debut"><input data-date-to type="date" aria-label="Date de fin"></div>
+            </div>
+            <section class="table-panel" data-table-tools data-export-name="historique-campagnes">
+                <div class="table-toolbar">
+                    <label class="show-count">Afficher <select data-page-size><option>10</option><option>25</option></select> éléments</label>
+                    <div class="toolbar-actions"><button class="export" type="button" data-table-export>Exporter CSV</button><input class="table-search" data-table-search type="search" placeholder="⌕ ..." aria-label="Rechercher dans l'historique"></div>
+                </div>
+                <div class="table-wrap">
+                    <table data-data-table>
+                        <thead><tr><th>Campagne</th><th>Créée le</th><th>Planifiée pour</th><th>Destinataires</th><th>Expéditeur</th><th>Statut</th><th>SMS envoyés</th><th>SMS en attente</th></tr></thead>
+                        <tbody>
+                            {% for campaign in campaigns %}
+                            <tr data-row data-date="{{ campaign.created_at|date:'Y-m-d' }}" data-search="{{ campaign.title }} {{ campaign.get_status_display }}"><td>{{ campaign.title }}</td><td>{{ campaign.created_at|date:'d/m/Y H:i' }}</td><td>{{ campaign.scheduled_at|date:'d/m/Y H:i' }}</td><td>{{ campaign.total_recipients }}</td><td>{{ sender_name }}</td><td><span class="status{% if campaign.status != 'sent' %} pending{% endif %}">{{ campaign.get_status_display }}</span></td><td>{{ campaign.sent_logs }}</td><td>{{ campaign.pending_logs }}</td></tr>
+                            {% empty %}
+                            <tr data-empty><td class="empty" colspan="8">Aucune campagne planifiée</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <footer class="table-footer"><span data-table-info></span><div class="pagination"><button type="button" data-page-prev disabled>Précédent</button><button type="button" data-page-next disabled>Suivant</button></div></footer>
+            </section>
+        </main>
+    </div>
+    <script src="{% static 'js/table-tools.js' %}"></script>
+</body>
+</html>

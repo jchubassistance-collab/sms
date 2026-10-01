@@ -1,0 +1,35 @@
+{% if request.user.is_authenticated %}
+    {% with account_name=request.user.get_full_name|default:request.user.username %}
+    <div class="account-notifications">
+        <button class="account-notification-trigger" type="button" data-notification-open aria-label="Notifications{% if account_notification_count %}, {{ account_notification_count }} alertes{% endif %}" aria-haspopup="true" aria-expanded="false" aria-controls="account-notification-menu">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+            {% if account_notification_count %}<span class="account-notification-count">{{ account_notification_count }}</span>{% endif %}
+        </button>
+        <section class="account-notification-menu" id="account-notification-menu" data-notification-menu hidden aria-label="Notifications">
+            <header><strong>Notifications</strong><span>{{ account_notification_count }}</span></header>
+            {% for notification in account_notifications %}
+                <a class="account-notification-item" href="{{ notification.url }}"><span class="notification-dot" aria-hidden="true"></span><span><strong>{{ notification.title }}</strong><small>{{ notification.detail }}</small></span><time>{{ notification.date|date:'d/m H:i' }}</time></a>
+            {% empty %}
+                <p class="account-notification-empty">Aucune notification pour le moment.</p>
+            {% endfor %}
+        </section>
+    </div>
+    <div class="account-profile">
+        <button class="account-profile-trigger" type="button" data-profile-open aria-haspopup="true" aria-expanded="false" aria-controls="account-profile-menu">
+            <span class="account-profile-avatar" aria-hidden="true">{{ account_name|slice:':2'|upper }}</span>
+            <span class="account-profile-name">{{ account_name }}</span>
+            <svg class="account-profile-chevron" aria-hidden="true" viewBox="0 0 16 16"><path d="m4 6 4 4 4-4"/></svg>
+        </button>
+        <div class="account-profile-menu" id="account-profile-menu" data-profile-menu hidden>
+            <div class="account-profile-heading">
+                <span class="account-profile-avatar" aria-hidden="true">{{ account_name|slice:':2'|upper }}</span>
+                <span><strong>{{ account_name }}</strong><small>{{ request.user.email|default:request.user.username }}</small></span>
+            </div>
+            <a href="{% url 'profile' %}">Mon profil</a>
+            <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit">Déconnexion</button></form>
+        </div>
+    </div>
+    {% endwith %}
+{% else %}
+    <a class="account-profile-anonymous" href="{% url 'login' %}">Connexion</a>
+{% endif %}

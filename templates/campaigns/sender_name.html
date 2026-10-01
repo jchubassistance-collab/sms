@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demande de Sender Name - SMS Flow</title>
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/pages/campaigns/sender_name.css' %}?v=1">
+</head>
+<body>
+    <div class="page">
+        {% include 'partials/sidebar.html' %}
+        <main>
+            <header class="topbar">
+                <label class="search"><span>⌕</span><input type="search" placeholder="Rechercher..."></label>
+                {% include 'partials/user_profile.html' %}
+            </header>
+            <div class="banner">Maximisez le pouvoir fulgurant du marketing par sms et mail.</div>
+            <p class="kicker">B-NOTIF</p>
+            <h1>Demande de Sender Name</h1>
+            {% for message in messages %}<p class="empty">{{ message }}</p>{% endfor %}
+            <section class="layout">
+                <article class="panel">
+                    <div class="panel-title">Formulaire de demande</div>
+                    <form class="form-body" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <label>Sender Name (Nom d'expediteur SMS)
+                            <input name="sender_name" maxlength="11" placeholder="Libelle expediteur SMS" required>
+                        </label>
+                        <label>Motif
+                            <textarea name="reason" placeholder="Expliquez le motif de votre demande..." required></textarea>
+                        </label>
+                        <label>Piece justificative (rcm, passeport, ...)
+                            <span class="file-field"><input id="sender-document-name" type="text" placeholder="Aucun fichier sélectionné" readonly><span class="file-button">Parcourir<input id="sender-document" type="file" name="document" accept=".pdf,.png,.jpg,.jpeg"></span></span>
+                        </label>
+                        <button class="submit" type="submit">Lancer la demande</button>
+                    </form>
+                </article>
+                <aside class="panel">
+                    <div class="panel-title">Historique Demandes</div>
+                    <div class="history-body">{% for sender_request in sender_requests %}<p>{{ sender_request.sender_name }} · {{ sender_request.get_status_display }} · {{ sender_request.created_at|date:'d/m/Y H:i' }}{% if sender_request.document %} · justificatif reçu{% endif %}</p>{% empty %}Aucune demande enregistrée pour le moment.{% endfor %}</div>
+                </aside>
+            </section>
+        </main>
+    </div>
+    <script>
+        const senderDocument = document.getElementById('sender-document');
+        senderDocument.addEventListener('change', () => {
+            document.getElementById('sender-document-name').value = senderDocument.files[0]?.name || '';
+        });
+    </script>
+</body>
+</html>

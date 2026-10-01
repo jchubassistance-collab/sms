@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact SMS - SMS Flow</title>
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/pages/contacts/contact_page.css' %}?v=1">
+</head>
+<body>
+    <div class="contact-shell">
+        {% include 'partials/sidebar.html' %}
+        <main class="contact-main">
+            <header class="topbar"><label class="search"><span>⌕</span><input type="search" placeholder="Rechercher un contact..."></label>{% include 'partials/user_profile.html' %}</header>
+            <div class="banner">Créez des communications mémorables en personnalisant vos SMS.</div>
+            <p class="kicker">TINDA</p><h1>Contact SMS</h1>
+            <div class="columns">
+                <section class="panel">
+                    <div class="panel-title">Contact SMS</div>
+                    <div class="tabs"><button class="tab active" type="button" data-tab="import">➤ Importer Contact</button><button class="tab" type="button" data-tab="manage">✎ Gestion contact</button></div>
+                    {% for message in messages %}<p class="form-message{% if message.tags == 'error' %} error{% endif %}">{{ message }}</p>{% endfor %}
+                    <div class="tab-panel" data-panel="import">
+                        <form class="upload-row" id="contact-import-form" method="post" enctype="multipart/form-data">{% csrf_token %}<input type="hidden" name="action" value="import"><label class="file-name" id="file-name">Sélectionner un fichier<input id="contact-file" name="file" type="file" accept=".csv" required hidden></label><button class="file-button" type="button" id="browse-file">Parcourir</button><button class="add-button" type="submit">Importer</button></form>
+                        <div class="notes"><span>Importez un fichier .csv séparé par des points-virgules ou des virgules.</span><span>La première ligne doit contenir les colonnes nom et téléphone; e-mail est facultatif.</span><span>Les numéros sont normalisés au format 242.</span></div>
+                    </div>
+                    <div class="tab-panel" data-panel="manage" hidden><form class="manage-form" method="post">{% csrf_token %}<input type="hidden" name="action" value="add"><input type="text" name="name" placeholder="Nom du contact" required><input type="tel" name="phone" placeholder="242 06..." required><input type="email" name="email" placeholder="Adresse e-mail (facultative)"><button class="add-button" type="submit">Enregistrer le contact</button></form></div>
+                </section>
+                <section class="panel"><div class="panel-title">Contacts enregistrés ({{ contacts|length }})</div><div class="list-body"><input class="list-search" type="search" placeholder="⌕ Rechercher ..."><table class="contact-table"><thead><tr><th>Nom</th><th>Téléphone</th><th>E-mail</th></tr></thead><tbody>{% for contact in contacts %}<tr data-search="{{ contact.name }} {{ contact.phone }} {{ contact.email }}"><td>{{ contact.name }}</td><td>{{ contact.phone }}</td><td>{{ contact.email|default:'-' }}</td></tr>{% empty %}<tr><td class="empty" colspan="3">Aucun contact enregistré</td></tr>{% endfor %}</tbody></table></div></section>
+            </div>
+        </main>
+    </div>
+    <script>
+        const fileInput = document.getElementById('contact-file');
+        const fileName = document.getElementById('file-name');
+        document.getElementById('browse-file').addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', () => { fileName.firstChild.textContent = fileInput.files[0]?.name || 'Sélectionner un fichier'; });
+        document.querySelectorAll('[data-tab]').forEach((tab) => tab.addEventListener('click', () => { document.querySelectorAll('[data-tab]').forEach((item) => item.classList.toggle('active', item === tab)); document.querySelectorAll('[data-panel]').forEach((panel) => { panel.hidden = panel.dataset.panel !== tab.dataset.tab; }); }));
+        const contactSearch = document.querySelector('.list-search');
+        contactSearch.addEventListener('input', () => {
+            const query = contactSearch.value.trim().toLowerCase();
+            document.querySelectorAll('.contact-table tbody tr[data-search]').forEach((row) => {
+                row.hidden = !row.dataset.search.toLowerCase().includes(query);
+            });
+        });
+    </script>
+</body>
+</html>

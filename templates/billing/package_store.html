@@ -1,0 +1,245 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acheter Forfait - SMS Flow</title>
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/pages/billing/package_store.css' %}?v=1">
+</head>
+<body>
+    <div class="shell">
+        {% include 'partials/sidebar.html' %}
+        <main class="content">
+            <header class="topbar"><label class="search"><span>⌕</span><input id="package-search" type="search" placeholder="Rechercher un forfait..."></label>{% include 'partials/user_profile.html' %}</header>
+            <div class="banner">Créez des communications mémorables avec vos SMS.</div>
+            <div class="heading-row"><div><p class="kicker">BOUTIQUE SMS</p><h1>Acheter Forfait</h1></div><button class="balance" type="button" id="balance-button" data-balance="{{ balance }}">Voir le solde</button></div>
+            <div class="store-toolbar"><div class="filters" aria-label="Filtrer les forfaits"><button class="filter-chip active" type="button" data-filter="all">Tous</button><button class="filter-chip" type="button" data-filter="access">Access</button><button class="filter-chip" type="button" data-filter="premium">Premium</button><button class="filter-chip" type="button" data-filter="business">Business</button></div><span class="result-count" id="result-count"></span></div>
+            <section class="grid" aria-label="Forfaits SMS">
+                {% for package in packages %}
+                <article class="card" data-tier="{{ package.badge|default:'SMS'|lower }}" data-name="{{ package.name|lower }}"><div class="card-art"><span class="badge">{{ package.badge|default:'SMS' }}</span><h2>Des campagnes SMS plus efficaces</h2></div><div class="card-body"><h3>{{ package.name }}</h3><div class="price">{{ package.price }} FCFA</div><div class="details"><span>Validité : <strong>{{ package.validity|default:30 }} jours</strong></span><span>Nombre de SMS : <strong>{{ package.quantity }}</strong></span></div></div><button class="buy" type="button" data-package-id="{{ package.id }}" data-package="{{ package.name }}" data-price="{{ package.price }}" data-quantity="{{ package.quantity }}">🛒 Acheter Forfait</button></article>
+                {% endfor %}
+            </section>
+        </main>
+    </div>
+    <form id="purchase-csrf" hidden>{% csrf_token %}</form>
+    <div class="modal-backdrop" id="balance-modal" hidden>
+        <section class="modal" role="dialog" aria-modal="true" aria-labelledby="balance-modal-title">
+            <h2 id="balance-modal-title">Solde disponible</h2>
+            <p>Crédit SMS actuellement disponible sur votre compte.</p>
+            <div class="balance-value"><strong id="balance-modal-value">{{ balance }}</strong><span>SMS</span></div>
+            <div class="modal-actions"><button class="modal-confirm" type="button" id="balance-modal-close">Fermer</button></div>
+        </section>
+    </div>
+    <div class="modal-backdrop" id="payment-method-modal" hidden>
+        <section class="modal" role="dialog" aria-modal="true" aria-labelledby="payment-method-title">
+            <h2 id="payment-method-title">Choisir le mode de paiement</h2>
+            <p id="payment-method-copy"></p>
+            <div class="payment-options">
+                <button class="payment-option" type="button" data-payment-method="mtn">MTN Mobile Money</button>
+                <button class="payment-option" type="button" data-payment-method="airtel">Airtel Money</button>
+            </div>
+            <div class="modal-actions"><button class="modal-cancel" type="button" id="method-cancel">Annuler</button></div>
+        </section>
+    </div>
+    <div class="modal-backdrop" id="purchase-modal" hidden>
+        <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <h2 id="modal-title">Vérifier votre achat</h2>
+            <p id="modal-copy"></p>
+            <label class="payment-phone-label" for="payment-phone">Numéro Mobile Money</label>
+            <input class="payment-phone-input" id="payment-phone" type="tel" inputmode="numeric" autocomplete="tel" value="{{ payment_phone }}" placeholder="242 06...">
+            <p class="payment-hint" id="payment-details" aria-live="polite"></p>
+            <div class="modal-actions">
+                <button class="modal-cancel" type="button" id="modal-back">Retour</button>
+                <button class="modal-cancel" type="button" id="modal-cancel">Annuler</button>
+                <button class="modal-confirm" type="button" id="modal-confirm">Valider l'achat</button>
+            </div>
+        </section>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    <script>
+        const packageCards = [...document.querySelectorAll('.card')];
+        const resultCount = document.getElementById('result-count');
+        const searchInput = document.getElementById('package-search');
+        const filterButtons = [...document.querySelectorAll('[data-filter]')];
+        let activeFilter = 'all';
+
+        function filterPackages() {
+            const query = searchInput.value.trim().toLowerCase();
+            let visible = 0;
+            packageCards.forEach((card) => {
+                const matchesFilter = activeFilter === 'all' || card.dataset.tier.includes(activeFilter);
+                const matchesSearch = !query || card.dataset.name.includes(query);
+                const shouldShow = matchesFilter && matchesSearch;
+                card.classList.toggle('is-hidden', !shouldShow);
+                if (shouldShow) visible += 1;
+            });
+            resultCount.textContent = `${visible} forfait${visible > 1 ? 's' : ''}`;
+        }
+
+        filterButtons.forEach((button) => button.addEventListener('click', () => {
+            activeFilter = button.dataset.filter;
+            filterButtons.forEach((item) => item.classList.toggle('active', item === button));
+            filterPackages();
+        }));
+        searchInput.addEventListener('input', filterPackages);
+        filterPackages();
+
+        const methodModal = document.getElementById('payment-method-modal');
+        const methodCopy = document.getElementById('payment-method-copy');
+        const modal = document.getElementById('purchase-modal');
+        const modalCopy = document.getElementById('modal-copy');
+        const paymentDetails = document.getElementById('payment-details');
+        const paymentPhoneInput = document.getElementById('payment-phone');
+        const toast = document.getElementById('toast');
+        const modalConfirm = document.getElementById('modal-confirm');
+        const balanceButton = document.getElementById('balance-button');
+        const balanceModal = document.getElementById('balance-modal');
+        const balanceModalValue = document.getElementById('balance-modal-value');
+        let selectedMethod = '';
+        let selectedPackage = null;
+        let toastTimeout;
+
+        function normalizePaymentPhone(value) {
+            let digits = value.replace(/\D/g, '');
+            if (digits.startsWith('00')) digits = digits.slice(2);
+            return digits.startsWith('242') ? digits : `242${digits}`;
+        }
+
+        function paymentPhoneIsValid() {
+            const normalizedPhone = normalizePaymentPhone(paymentPhoneInput.value);
+            const localPhone = normalizedPhone.slice(3);
+            if (normalizedPhone.length !== 12) return false;
+            if (selectedMethod === 'mtn') return localPhone.startsWith('06');
+            if (selectedMethod === 'airtel') return localPhone.startsWith('04') || localPhone.startsWith('05');
+            return false;
+        }
+
+        function updatePaymentPhoneHint() {
+            if (!selectedMethod) return;
+            const provider = selectedMethod === 'mtn' ? 'MTN (06)' : 'Airtel (04/05)';
+            paymentDetails.textContent = paymentPhoneIsValid()
+                ? `Le paiement sera envoyé sur ce numéro ${provider}. Vous devrez confirmer sur votre téléphone.`
+                : `Saisissez un numéro congolais valide correspondant à ${provider}.`;
+            modalConfirm.disabled = !paymentPhoneIsValid();
+        }
+
+        function showToast(message) {
+            toast.textContent = message;
+            toast.hidden = false;
+            window.clearTimeout(toastTimeout);
+            toastTimeout = window.setTimeout(() => { toast.hidden = true; }, 4200);
+        }
+
+        document.querySelectorAll('.buy').forEach((button) => button.addEventListener('click', () => {
+            selectedPackage = button.dataset;
+            methodCopy.textContent = `${selectedPackage.package} : ${selectedPackage.quantity} SMS pour ${selectedPackage.price} FCFA. Choisissez votre opérateur.`;
+            methodModal.hidden = false;
+        }));
+
+        document.querySelectorAll('[data-payment-method]').forEach((button) => button.addEventListener('click', () => {
+            selectedMethod = button.dataset.paymentMethod;
+            methodModal.hidden = true;
+            modalCopy.textContent = `${selectedPackage.package} contient ${selectedPackage.quantity} SMS pour ${selectedPackage.price} FCFA.`;
+            updatePaymentPhoneHint();
+            modal.hidden = false;
+            paymentPhoneInput.focus();
+        }));
+        document.getElementById('method-cancel').addEventListener('click', () => {
+            methodModal.hidden = true;
+            selectedPackage = null;
+        });
+        paymentPhoneInput.addEventListener('input', updatePaymentPhoneHint);
+        document.getElementById('modal-back').addEventListener('click', () => {
+            modal.hidden = true;
+            methodModal.hidden = false;
+        });
+        document.getElementById('modal-cancel').addEventListener('click', () => { modal.hidden = true; });
+
+        async function checkPaymentStatus(statusUrl) {
+            for (let attempt = 0; attempt < 24; attempt += 1) {
+                await new Promise((resolve) => window.setTimeout(resolve, 5000));
+                try {
+                    const response = await fetch(statusUrl);
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error || 'Vérification impossible.');
+                    if (data.status === 'paid') {
+                        showToast(`Paiement ${data.operator} confirmé. Votre forfait est crédité.`);
+                        return;
+                    }
+                    if (data.status === 'failed') {
+                        showToast(`Paiement ${data.operator} refusé ou expiré. Aucune somme n’a été débitée.`);
+                        return;
+                    }
+                } catch (error) {
+                    showToast('Demande envoyée, mais vérification momentanément indisponible. Consultez Transactions.');
+                    return;
+                }
+            }
+            showToast('Paiement toujours en attente. Confirmez-le sur votre téléphone ou consultez Transactions.');
+        }
+
+        document.getElementById('modal-confirm').addEventListener('click', async () => {
+            if (!selectedPackage || !paymentPhoneIsValid() || modalConfirm.disabled) return;
+            modalConfirm.disabled = true;
+            const csrfToken = document.querySelector('#purchase-csrf input').value;
+            try {
+                const response = await fetch('{% url "purchase-package" %}', {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: new URLSearchParams({
+                        package_id: selectedPackage.packageId,
+                        payment_method: selectedMethod,
+                        phone: normalizePaymentPhone(paymentPhoneInput.value),
+                    }),
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    const errorMessage = data.transaction_id && data.status === 'failed'
+                        ? `${data.error} Tentative enregistrée comme échec #${data.transaction_id}.`
+                        : data.error || 'La demande n’a pas pu être créée.';
+                    showToast(errorMessage);
+                    if (data.status === 'pending' && data.status_url) checkPaymentStatus(data.status_url);
+                    return;
+                }
+                modal.hidden = true;
+                showToast(`${data.message} Transaction #${data.transaction_id}.`);
+                checkPaymentStatus(data.status_url);
+            } catch (error) {
+                showToast('Erreur réseau : la demande n’a pas pu être envoyée. Réessayez.');
+            } finally {
+                updatePaymentPhoneHint();
+            }
+        });
+        balanceButton.addEventListener('click', () => {
+            balanceModalValue.textContent = balanceButton.dataset.balance;
+            balanceModal.hidden = false;
+        });
+        document.getElementById('balance-modal-close').addEventListener('click', () => {
+            balanceModal.hidden = true;
+            balanceButton.focus();
+        });
+        balanceModal.addEventListener('click', (event) => {
+            if (event.target === balanceModal) balanceModal.hidden = true;
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !balanceModal.hidden) balanceModal.hidden = true;
+        });
+    </script>
+    <script>
+        const sharedPackageToggle = document.getElementById('package-toggle');
+        const sharedPackageSubmenu = document.getElementById('package-submenu');
+        if (sharedPackageToggle && sharedPackageSubmenu) {
+            sharedPackageToggle.addEventListener('click', () => {
+                const expanded = sharedPackageToggle.getAttribute('aria-expanded') === 'true';
+                sharedPackageToggle.setAttribute('aria-expanded', String(!expanded));
+                sharedPackageSubmenu.hidden = expanded;
+                sharedPackageToggle.querySelector('b').textContent = expanded ? '⌄' : '⌃';
+            });
+        }
+    </script>
+</body>
+</html>

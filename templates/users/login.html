@@ -1,0 +1,143 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
+    <title>Connexion - SMS Flow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pages/users/login.css' %}?v=1">
+</head>
+<body class="auth-page login-page">
+    <div class="login-shell">
+        <div class="brand">
+            <div class="brand-icon" aria-label="Compte utilisateur">&#128100;</div>
+            <div class="brand-copy">
+                <span>SMS PLATFORM</span>
+                <h1>Bienvenue</h1>
+                <p>Gérez vos messages, vos contacts et vos campagnes depuis un espace unique.</p>
+            </div>
+        </div>
+
+        <form class="login-box" id="login-form" method="post">
+            {% csrf_token %}
+            <div class="input-wrap">
+                <span class="icon">👤</span>
+                <input type="tel" name="phone" value="242" placeholder="242 06..." pattern="242[0-9]{9}" required autocomplete="tel">
+            </div>
+
+            <div class="input-wrap">
+                <span class="icon">🔒</span>
+                <input type="password" name="password" placeholder="Mot de passe" required>
+            </div>
+
+            <div class="remember-row">
+                <label class="remember">
+                    <input type="checkbox" name="remember">
+                    <span>Se souvenir de moi</span>
+                </label>
+                <a href="{% url 'password-reset' %}" class="forgot">Mot de passe oublié ?</a>
+            </div>
+
+            <div class="captcha-row" aria-label="Vérification du CAPTCHA">
+                <input class="captcha-input" type="text" name="captcha" placeholder="Saisissez le code affiché" required autocomplete="off">
+                <div class="captcha-visual" aria-hidden="true">
+                    <span class="captcha-image">{% for character in captcha %}<span class="captcha-char">{{ character }}</span>{% endfor %}</span>
+                    <span class="captcha-noise"></span>
+                    <button class="captcha-refresh" type="button" aria-label="Renouveler le CAPTCHA">↻</button>
+                </div>
+            </div>
+
+            <p class="login-error" id="login-error" role="alert" aria-live="polite" {% if not login_error %}hidden{% endif %}>{{ login_error }}</p>
+            <button class="login-btn" type="submit">Se connecter</button>
+            <a class="login-btn secondary-btn" href="{% url 'register' %}">Créer un compte</a>
+        </form>
+    </div>
+    <script>
+        const loginForm = document.querySelector('#login-form');
+        const loginError = document.querySelector('#login-error');
+        const captchaInput = loginForm.querySelector('[name="captcha"]');
+        const captchaImage = document.querySelector('.captcha-image');
+        const refreshCaptchaButton = document.querySelector('.captcha-refresh');
+        const submitButton = loginForm.querySelector('[type="submit"]');
+
+        function updateCaptcha(value) {
+            captchaImage.replaceChildren(...value.split('').map((character) => {
+                const characterElement = document.createElement('span');
+                characterElement.className = 'captcha-char';
+                characterElement.textContent = character;
+                return characterElement;
+            }));
+        }
+
+        function showLoginError(message) {
+            loginError.textContent = message;
+            loginError.hidden = false;
+        }
+
+        const phoneInput = document.querySelector('[name="phone"]');
+        phoneInput.addEventListener('input', () => {
+            const digits = phoneInput.value.replace(/\D/g, '').replace(/^242/, '');
+            phoneInput.value = `242${digits}`;
+        });
+
+        loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            loginError.hidden = true;
+            submitButton.disabled = true;
+
+            try {
+                const response = await fetch(window.location.href, {
+                    method: 'POST',
+                    body: new FormData(loginForm),
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': loginForm.querySelector('[name="csrfmiddlewaretoken"]').value,
+                    },
+                });
+                const result = await response.json();
+
+                if (!response.ok || !result.ok) {
+                    showLoginError(result.error || 'La connexion a échoué. Réessayez.');
+                    if (result.captcha) updateCaptcha(result.captcha);
+                    loginForm.querySelector('[name="password"]').value = '';
+                    captchaInput.value = '';
+                    captchaInput.focus();
+                    return;
+                }
+
+                window.location.assign(result.redirect_url);
+            } catch (error) {
+                showLoginError('Connexion impossible. Vérifiez votre connexion et réessayez.');
+            } finally {
+                submitButton.disabled = false;
+            }
+        });
+
+        refreshCaptchaButton.addEventListener('click', async () => {
+            refreshCaptchaButton.disabled = true;
+            try {
+                const refreshUrl = new URL(window.location.href);
+                refreshUrl.searchParams.set('refresh_captcha', '1');
+                const response = await fetch(refreshUrl, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const result = await response.json();
+                if (response.ok && result.captcha) {
+                    updateCaptcha(result.captcha);
+                    captchaInput.value = '';
+                    loginError.hidden = true;
+                }
+            } catch (error) {
+                showLoginError('Impossible de renouveler le CAPTCHA. Réessayez.');
+            } finally {
+                refreshCaptchaButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/search-tools.css' %}?v=1">
+<aside class="shared-sidebar">
+    <div class="shared-mobile-header">
+        <div class="shared-brand"><strong>SMS</strong> FLOW</div>
+        <button class="shared-mobile-toggle" type="button" data-mobile-nav-toggle aria-expanded="false" aria-controls="shared-mobile-menu" aria-label="Ouvrir le menu de navigation">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+    <div class="shared-mobile-menu" id="shared-mobile-menu">
+    <div class="shared-label">DASHBOARDS</div>
+    <nav class="shared-nav"><a class="{% if request.path == '/dashboard/' %}active{% endif %}" href="{% url 'dashboard' %}"><span aria-hidden="true">&#9638;</span>Dashboard</a></nav>
+    <div class="shared-label">FORFAIT</div>
+    <nav class="shared-nav"><button class="shared-toggle {% if request.path == '/packages/' %}active{% endif %}" id="sidebar-package-toggle" type="button" aria-expanded="{% if request.path == '/packages/' %}true{% else %}false{% endif %}" aria-controls="sidebar-package-submenu"><span aria-hidden="true">&#9632;</span>ACHAT FORFAIT <b aria-hidden="true">&#8964;</b></button></nav>
+    <nav class="shared-subnav" id="sidebar-package-submenu" {% if request.path != '/packages/' and request.path != '/transactions/' %}hidden{% endif %}><a class="{% if request.path == '/packages/' %}active{% endif %}" href="{% url 'package-store' %}"><span aria-hidden="true">&#9632;</span>Acheter Forfait</a><a class="{% if request.path == '/transactions/' %}active{% endif %}" href="{% url 'transaction-page' %}"><span aria-hidden="true">&#9633;</span>Transactions</a></nav>
+    <div class="shared-label">CONTACT</div>
+    <nav class="shared-nav"><button class="shared-toggle {% if request.path == '/contacts/' or request.path == '/contact-mail/' %}active{% endif %}" id="contact-toggle" type="button" aria-expanded="{% if request.path == '/contacts/' or request.path == '/contact-mail/' %}true{% else %}false{% endif %}" aria-controls="contact-submenu"><span aria-hidden="true">&#9906;</span>CONTACT <b aria-hidden="true">&#8964;</b></button></nav>
+    <nav class="shared-subnav" id="contact-submenu" {% if request.path != '/contacts/' and request.path != '/contact-mail/' %}hidden{% endif %}><a class="{% if request.path == '/contacts/' %}active{% endif %}" href="{% url 'contacts-page' %}"><span aria-hidden="true">&#9632;</span>Contact SMS</a><a class="{% if request.path == '/contact-mail/' %}active{% endif %}" href="{% url 'contact-mail-page' %}"><span aria-hidden="true">@</span>Contact MAIL</a></nav>
+    <div class="shared-label">B-NOTIF</div>
+    <nav class="shared-nav"><button class="shared-toggle {% if request.path == '/messages/sender-name/' or request.path == '/messages/simple/' or request.path == '/messages/bulk-sms/' or request.path == '/messages/sms-history/' or request.path == '/messages/bulk-mail/' or request.path == '/messages/mail-history/' %}active{% endif %}" id="message-toggle" type="button" aria-expanded="{% if request.path == '/messages/sender-name/' or request.path == '/messages/simple/' or request.path == '/messages/bulk-sms/' or request.path == '/messages/sms-history/' or request.path == '/messages/bulk-mail/' or request.path == '/messages/mail-history/' %}true{% else %}false{% endif %}" aria-controls="message-submenu"><span aria-hidden="true">&#9993;</span>MESSAGE <b aria-hidden="true">&#8964;</b></button></nav>
+    <nav class="shared-subnav message-subnav" id="message-submenu" {% if request.path != '/messages/sender-name/' and request.path != '/messages/simple/' and request.path != '/messages/bulk-sms/' and request.path != '/messages/sms-history/' and request.path != '/messages/bulk-mail/' and request.path != '/messages/mail-history/' %}hidden{% endif %}>
+        <a class="{% if request.path == '/messages/sender-name/' %}active{% endif %}" href="{% url 'sender-name' %}"><span aria-hidden="true">&#9829;</span>Sender Name</a>
+        <a class="{% if request.path == '/messages/simple/' %}active{% endif %}" href="{% url 'simple-message' %}"><span aria-hidden="true">&#9993;</span>Message simple</a>
+        <a class="{% if request.path == '/messages/bulk-sms/' %}active{% endif %}" href="{% url 'bulk-sms' %}"><span aria-hidden="true">&#9632;</span>Bulk SMS</a>
+        <a class="{% if request.path == '/messages/sms-history/' %}active{% endif %}" href="{% url 'sms-history' %}"><span aria-hidden="true">&#9700;</span>Historique SMS</a>
+        <a class="{% if request.path == '/messages/bulk-mail/' %}active{% endif %}" href="{% url 'bulk-mail' %}"><span aria-hidden="true">@</span>Bulk Mail</a>
+        <a class="{% if request.path == '/messages/mail-history/' %}active{% endif %}" href="{% url 'mail-history' %}"><span aria-hidden="true">&#9700;</span>Historique Mail</a>
+    </nav>
+    <div class="shared-label">B-PLANIFICATION</div>
+    <nav class="shared-nav"><button class="shared-toggle {% if request.path == '/messages/scheduled/' or request.path == '/messages/scheduled-history/' %}active{% endif %}" id="schedule-toggle" type="button" aria-expanded="{% if request.path == '/messages/scheduled/' or request.path == '/messages/scheduled-history/' %}true{% else %}false{% endif %}" aria-controls="schedule-submenu"><span aria-hidden="true">&#9702;</span>Planification Message <b aria-hidden="true">&#8964;</b></button></nav>
+    <nav class="shared-subnav schedule-subnav" id="schedule-submenu" {% if request.path != '/messages/scheduled/' and request.path != '/messages/scheduled-history/' %}hidden{% endif %}>
+        <a class="{% if request.path == '/messages/scheduled/' %}active{% endif %}" href="{% url 'scheduled-message' %}"><span aria-hidden="true">&#9702;</span>Planification Message</a>
+        <a class="{% if request.path == '/messages/scheduled-history/' %}active{% endif %}" href="{% url 'scheduled-history' %}"><span aria-hidden="true">&#9700;</span>Historique</a>
+    </nav>
+    <div class="shared-label">RAPPORTS</div>
+    <nav class="shared-nav"><a class="{% if request.path == '/messages/sms-history/' %}active{% endif %}" href="{% url 'sms-history' %}"><span aria-hidden="true">&#9700;</span>Historique Envois</a></nav>
+    <div class="shared-label">SUPPORT CLIENT</div>
+    <nav class="shared-nav"><a class="{% if request.path == '/support/' %}active{% endif %}" href="{% url 'support-page' %}"><span aria-hidden="true">?</span>Support Client</a></nav>
+    <div class="shared-spacer"></div>
+    <nav class="shared-nav">{% if request.user.is_authenticated %}<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="shared-logout" type="submit"><span aria-hidden="true">&#8618;</span>Log Out</button></form>{% else %}<a href="{% url 'login' %}"><span aria-hidden="true">&#8618;</span>Log In</a>{% endif %}</nav>
+    </div>
+</aside>
+<script src="{% static 'js/sidebar-navigation.js' %}?v=6"></script>
+<script src="{% static 'js/search-tools.js' %}?v=1"></script>

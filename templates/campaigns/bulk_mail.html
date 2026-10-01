@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Mail - SMS Flow</title>
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/pages/campaigns/bulk_mail.css' %}?v=1">
+</head>
+<body>
+    <div class="page">
+        {% include 'partials/sidebar.html' %}
+        <main>
+            <header class="topbar">
+                <label class="search"><span>⌕</span><input type="search" placeholder="Rechercher..."></label>
+                {% include 'partials/user_profile.html' %}
+            </header>
+            <div class="banner">Maximisez le pouvoir fulgurant du marketing par sms et mail.</div>
+            <p class="kicker">B-NOTIF</p>
+            <h1>Mail masse</h1>
+            {% for message in messages %}<p class="empty">{{ message }}</p>{% endfor %}
+            {% if email_backend_is_console %}<p class="hint">Mode développement : l’e-mail est écrit dans la console Django et n’est pas livré à une vraie boîte de réception.</p>{% endif %}
+            <section class="layout">
+                <article class="panel">
+                    <div class="panel-title">Envoyer Mail en masse <span>−</span></div>
+                    <form class="form-body" id="mail-form" method="post">
+                        {% csrf_token %}
+                        <label>Groupe de contacts
+                            <select name="contact_group"><option value="all">Tous mes contacts e-mail</option>{% for group in contact_groups %}<option value="{{ group.pk }}">{{ group.name }}</option>{% endfor %}</select>
+                        </label>
+                        <input class="subject" name="subject" placeholder="Objet du mail" required>
+                        <div class="signature-row">
+                            <label>Adresse d’expédition configurée</label>
+                            <input type="email" value="{{ sender_email }}" readonly>
+                        </div>
+                        <label>Contenu du mail
+                            <div class="editor-shell">
+                                <div class="toolbar" aria-label="Outils de mise en forme">
+                                    <button type="button" data-command="bold">B</button><button type="button" data-command="italic"><i>I</i></button><button type="button" data-command="underline"><u>U</u></button><button type="button" data-command="justifyLeft">≡</button><button type="button" data-command="justifyCenter">≡</button><button type="button" data-command="insertUnorderedList">•</button><button type="button" data-command="createLink">Link</button>
+                                </div>
+                                <div class="editor" id="mail-editor" contenteditable="true" role="textbox" aria-label="Contenu du mail"></div>
+                            </div>
+                        </label>
+                        <input type="hidden" name="body" id="mail-body">
+                        <button class="submit" type="submit">Envoyer à mes contacts</button>
+                    </form>
+                </article>
+                <aside class="panel">
+                    <div class="panel-title">Options <span>−</span></div>
+                    <div class="options-body">
+                        <strong>Derniers e-mails enregistrés</strong>
+                        {% for mail_log in recent_mail_logs %}<div class="empty">{{ mail_log.recipient }} · {{ mail_log.subject }} · {{ mail_log.get_status_display }}</div>{% empty %}<div class="empty">Aucun e-mail enregistré.</div>{% endfor %}
+                    </div>
+                </aside>
+            </section>
+        </main>
+    </div>
+    <script>
+        const editor = document.getElementById('mail-editor');
+        const form = document.getElementById('mail-form');
+        const body = document.getElementById('mail-body');
+        document.querySelectorAll('[data-command]').forEach((button) => {
+            button.addEventListener('click', () => {
+                editor.focus();
+                document.execCommand(button.dataset.command, false, button.dataset.command === 'createLink' ? prompt('URL du lien') : null);
+            });
+        });
+        form.addEventListener('submit', () => { body.value = editor.innerHTML; });
+    </script>
+</body>
+</html>

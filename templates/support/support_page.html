@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Client - SMS Flow</title>
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/pages/support/support_page.css' %}?v=1">
+</head>
+<body>
+    <div class="page">
+        {% include 'partials/sidebar.html' %}
+        <main>
+            <header class="topbar">
+                <label class="search"><span>⌕</span><input type="search" placeholder="Rechercher..."></label>
+                {% include 'partials/user_profile.html' %}
+            </header>
+            <div class="banner">Maximisez le pouvoir fulgurant du marketing par sms et mail.</div>
+            <p class="kicker">B-NOTIF</p>
+            <h1>Faire une plainte</h1>
+            {% for message in messages %}<p class="empty">{{ message }}</p>{% endfor %}
+            <section class="layout">
+                <article class="panel">
+                    <div class="panel-title">Formulaire d'emission de plainte</div>
+                    <form class="form-body" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <label>Categorie
+                            <select name="category"><option>AUTRE</option><option>PROBLEME DE COMPTE</option><option>PROBLEME D'ENVOI</option><option>FACTURATION</option></select>
+                        </label>
+                        <label>Message
+                            <textarea name="message" required></textarea>
+                        </label>
+                        <label class="check-row"><input type="checkbox" name="include_capture">Je souhaite inserer une capture d'ecran</label>
+                        <div class="file-row"><input id="screenshot-name" type="text" placeholder="Aucun fichier sélectionné" readonly><label class="file-button">Parcourir<input id="screenshot" type="file" name="screenshot" accept=".png,.jpg,.jpeg"></label></div>
+                        <button class="submit" type="submit">Soumettre</button>
+                    </form>
+                </article>
+                <article class="panel history-panel" data-table-tools>
+                    <div class="history-tab">Section Plaintes</div>
+                    <div class="history-title">Mes Plaintes</div>
+                    <div class="toolbar"><span>Afficher <select data-page-size><option>10</option><option>25</option></select> éléments</span><input data-table-search type="search" placeholder="⌕ ..." aria-label="Rechercher dans les plaintes"></div>
+                    <div class="table-wrap"><table data-data-table><thead><tr><th>Date émission</th><th>Catégorie</th><th>Contenu</th><th>Statut</th><th>Pièce jointe</th></tr></thead><tbody>{% for ticket in tickets %}<tr data-row data-date="{{ ticket.created_at|date:'Y-m-d' }}" data-search="{{ ticket.subject }} {{ ticket.message }} {{ ticket.get_status_display }}"><td>{{ ticket.created_at|date:'d/m/Y H:i' }}</td><td>{{ ticket.subject }}</td><td>{{ ticket.message|truncatechars:55 }}</td><td><span class="status">{{ ticket.get_status_display }}</span></td><td>{% if ticket.screenshot %}Fichier reçu{% else %}Aucun{% endif %}</td></tr>{% empty %}<tr data-empty><td class="empty" colspan="5">Aucune plainte enregistrée</td></tr>{% endfor %}</tbody></table></div>
+                    <footer class="footer"><span data-table-info></span><span><button data-page-prev disabled>Précédent</button><button data-page-next disabled>Suivant</button></span></footer>
+                </article>
+            </section>
+        </main>
+    </div>
+    <script>
+        const screenshotInput = document.getElementById('screenshot');
+        screenshotInput.addEventListener('change', () => {
+            document.getElementById('screenshot-name').value = screenshotInput.files[0]?.name || '';
+        });
+    </script>
+    <script src="{% static 'js/table-tools.js' %}"></script>
+</body>
+</html>

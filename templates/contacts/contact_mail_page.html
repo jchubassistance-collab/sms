@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact MAIL - SMS Flow</title>
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/pages/contacts/contact_mail_page.css' %}?v=1">
+</head>
+<body>
+    <div class="mail-shell">
+        {% include 'partials/sidebar.html' %}
+        <main class="mail-main">
+            <header class="topbar"><label class="search"><span>⌕</span><input type="search" placeholder="Rechercher un contact mail..."></label>{% include 'partials/user_profile.html' %}</header>
+            <div class="banner">Redéfinissez l’art de la communication avec vos emails.</div>
+            <p class="kicker">TINDA</p><h1>Contact MAIL</h1>
+            <div class="columns">
+                <section class="panel"><div class="panel-title">Contact MAIL</div><div class="tabs"><button class="tab active" type="button" data-tab="import">➤ Importer Contact</button><button class="tab" type="button" data-tab="manage">✎ Gestion contact</button></div>
+                    {% for message in messages %}<p class="form-message{% if message.tags == 'error' %} error{% endif %}">{{ message }}</p>{% endfor %}
+                    <div class="tab-panel" data-panel="import"><form class="upload-row" id="mail-import-form" method="post" enctype="multipart/form-data">{% csrf_token %}<input type="hidden" name="action" value="import"><label class="file-name" id="mail-file-name">Sélectionner un fichier<input id="mail-file" name="file" type="file" accept=".csv" required hidden></label><button class="file-button" type="button" id="mail-browse">Parcourir</button><button class="add-button" type="submit">Importer</button></form><div class="notes"><span>Importez un CSV séparé par des points-virgules ou des virgules.</span><span>La première ligne doit contenir une colonne e-mail; le nom est facultatif.</span><span>Les e-mails invalides ou déjà enregistrés sont ignorés.</span></div></div>
+                    <div class="tab-panel" data-panel="manage" hidden><form class="mail-form" method="post">{% csrf_token %}<input type="hidden" name="action" value="add"><input type="text" name="name" placeholder="Nom du contact" required><input type="email" name="email" placeholder="Adresse e-mail" required><button class="add-button" type="submit">Enregistrer le contact</button></form></div>
+                </section>
+                <section class="panel"><div class="panel-title">Contacts e-mail ({{ contacts|length }})</div><div class="list-body"><input class="list-search" type="search" placeholder="⌕ Rechercher ..."><table class="mail-table"><thead><tr><th>Nom</th><th>E-mail</th></tr></thead><tbody>{% for contact in contacts %}<tr data-search="{{ contact.name }} {{ contact.email }}"><td>{{ contact.name }}</td><td>{{ contact.email }}</td></tr>{% empty %}<tr><td class="empty" colspan="2">Aucun contact e-mail enregistré</td></tr>{% endfor %}</tbody></table></div></section>
+            </div>
+        </main>
+    </div>
+    <script>
+        const mailFile = document.getElementById('mail-file');
+        document.getElementById('mail-browse').addEventListener('click', () => mailFile.click());
+        mailFile.addEventListener('change', () => { document.getElementById('mail-file-name').firstChild.textContent = mailFile.files[0]?.name || 'Sélectionner un fichier'; });
+        document.querySelectorAll('[data-tab]').forEach((tab) => tab.addEventListener('click', () => { document.querySelectorAll('[data-tab]').forEach((item) => item.classList.toggle('active', item === tab)); document.querySelectorAll('[data-panel]').forEach((panel) => { panel.hidden = panel.dataset.panel !== tab.dataset.tab; }); }));
+        const mailSearch = document.querySelector('.list-search');
+        mailSearch.addEventListener('input', () => {
+            const query = mailSearch.value.trim().toLowerCase();
+            document.querySelectorAll('.mail-table tbody tr[data-search]').forEach((row) => {
+                row.hidden = !row.dataset.search.toLowerCase().includes(query);
+            });
+        });
+    </script>
+</body>
+</html>

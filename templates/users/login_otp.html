@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
+    <title>Vérification du téléphone</title>
+    <link rel="stylesheet" href="{% static 'css/pages/users/login_otp.css' %}?v=1">
+</head>
+<body>
+    <main class="otp-card">
+        <img class="logo" src="{% static 'images/v3.png' %}" alt="Logo">
+        <div class="rule"><span>Espace de gestion</span></div>
+        <h1>Vérifiez votre numéro de téléphone</h1>
+        <p>Saisissez le code envoyé au {{ phone }} pour accéder à votre tableau de bord.</p>
+        <form method="post">
+            {% csrf_token %}
+            <input class="otp-input" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="Code à 6 chiffres" required autofocus>
+            <button class="submit-btn" type="submit">Vérifier et ouvrir le tableau de bord</button>
+        </form>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="resend">
+            <button class="resend-btn" type="submit">Renvoyer le code</button>
+        </form>
+        {% if error %}<p class="error">{{ error }}</p>{% endif %}
+        {% if resend_message %}<p class="success">{{ resend_message }}</p>{% endif %}
+    </main>
+</body>
+</html>

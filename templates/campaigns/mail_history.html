@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique Mail - SMS Flow</title>
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/pages/campaigns/mail_history.css' %}?v=1">
+</head>
+<body>
+    <div class="page">
+        {% include 'partials/sidebar.html' %}
+        <main>
+            <header class="topbar">
+                <label class="search"><span>⌕</span><input type="search" placeholder="Rechercher..."></label>
+                {% include 'partials/user_profile.html' %}
+            </header>
+            <div class="banner">Maximisez le pouvoir fulgurant du marketing par sms et mail.</div>
+            <div class="heading-row">
+                <div><p class="kicker">B-NOTIF</p><h1>Historique Mail</h1></div>
+                <div class="date-filter"><input data-date-from type="date" aria-label="Date de debut"><input data-date-to type="date" aria-label="Date de fin"></div>
+            </div>
+            <section class="table-panel" data-table-tools data-export-name="historique-mails">
+                <div class="table-toolbar">
+                    <label class="show-count">Afficher <select data-page-size><option>10</option><option>25</option></select> éléments</label>
+                    <div class="toolbar-actions"><button class="export" type="button" data-table-export>Exporter CSV</button><input class="table-search" data-table-search type="search" placeholder="⌕ ..." aria-label="Rechercher dans l'historique"></div>
+                </div>
+                <div class="table-wrap">
+                    <table data-data-table>
+                        <thead><tr><th>Date d'envoi</th><th>Objet</th><th>Cout</th><th>Expediteur</th><th>Statut</th><th>Total Mail</th><th>Termine</th><th>Non termine</th><th>Parametre</th></tr></thead>
+                        <tbody>{% for mail_log in mail_logs %}<tr data-row data-date="{{ mail_log.created_at|date:'Y-m-d' }}" data-search="{{ mail_log.subject }} {{ mail_log.recipient }} {{ mail_log.status }}"><td>{{ mail_log.created_at|date:'d/m/Y H:i' }}</td><td>{{ mail_log.subject }}</td><td>-</td><td>{{ mail_log.user.email }}</td><td>{{ mail_log.get_status_display }}</td><td>1</td><td>{% if mail_log.status == 'sent' %}1{% else %}0{% endif %}</td><td>{% if mail_log.status == 'failed' %}1{% else %}0{% endif %}</td><td>{{ mail_log.recipient }}</td></tr>{% empty %}<tr data-empty><td class="empty" colspan="9">Aucun e-mail enregistré</td></tr>{% endfor %}</tbody>
+                    </table>
+                </div>
+                <footer class="table-footer"><span data-table-info></span><div class="pagination"><button type="button" data-page-prev disabled>Précédent</button><button type="button" data-page-next disabled>Suivant</button></div></footer>
+            </section>
+        </main>
+    </div>
+    <script src="{% static 'js/table-tools.js' %}"></script>
+</body>
+</html>

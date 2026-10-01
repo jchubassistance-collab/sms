@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk SMS - SMS Flow</title>
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/pages/campaigns/bulk_sms.css' %}?v=1">
+</head>
+<body>
+    <div class="page">
+        {% include 'partials/sidebar.html' %}
+        <main>
+            <header class="topbar">
+                <label class="search"><span>⌕</span><input type="search" placeholder="Rechercher..."></label>
+                {% include 'partials/user_profile.html' %}
+            </header>
+            <div class="banner">Maximisez le pouvoir fulgurant du marketing par sms et mail.</div>
+            <p class="kicker">B-NOTIF</p>
+            <h1>Message masse</h1>
+            {% for message in messages %}<p class="empty">{{ message }}</p>{% endfor %}
+            <section class="layout">
+                <article class="panel">
+                    <div class="panel-title">Envoyer message en masse <span>−</span></div>
+                    <form class="form-body" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <label>Date d'envoi
+                                <input type="datetime-local" name="send_at">
+                            </label>
+                            <label>Expediteur
+                                <select name="sender_name"><option value="{{ sender_name }}">{{ sender_name }}</option></select>
+                            </label>
+                        </div>
+                        <div class="row">
+                            <label>Groupe de contacts
+                                <select name="contact_group"><option value="all">Tous mes contacts avec téléphone</option>{% for group in contact_groups %}<option value="{{ group.pk }}">{{ group.name }}</option>{% endfor %}</select>
+                            </label>
+                        </div>
+                        <label>Message
+                            <span class="message-wrap"><textarea id="bulk-message" name="message" maxlength="160" required></textarea><span class="counter" id="bulk-counter">0 / 160</span></span>
+                        </label>
+                        <div class="submit-row"><button class="submit" type="submit">Envoyer aux contacts</button></div>
+                    </form>
+                </article>
+                <aside class="panel">
+                    <div class="panel-title">Options <span>−</span></div>
+                    <div class="options-body">
+                        <strong>Derniers SMS enregistrés</strong>
+                        {% for log in recent_logs %}<div class="empty">{{ log.campaign.title }} · {{ log.status }} · {{ log.sent_at|date:'d/m H:i' }}</div>{% empty %}<div class="empty">Aucun SMS enregistré.</div>{% endfor %}
+                    </div>
+                </aside>
+            </section>
+        </main>
+    </div>
+    <script>
+        const bulkMessage = document.getElementById('bulk-message');
+        const bulkCounter = document.getElementById('bulk-counter');
+        bulkMessage.addEventListener('input', () => { bulkCounter.textContent = `${bulkMessage.value.length} / 160`; });
+    </script>
+</body>
+</html>
