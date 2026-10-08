@@ -119,6 +119,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+SESSION_COOKIE_AGE = 600
+SESSION_SAVE_EVERY_REQUEST = True
+
 ROOT_URLCONF = 'sms_platform.urls'
 
 TEMPLATES = [
@@ -203,12 +206,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 12,
+        },
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+    {
+        'NAME': 'users.validators.PasswordComplexityValidator',
     },
 ]
 
@@ -252,4 +261,6 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    
 ]
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

@@ -11,12 +11,12 @@ class RegistrationForm(forms.ModelForm):
         label='Mot de passe',
         widget=forms.PasswordInput,
         validators=[password_validation.validate_password],
-        required=False,
+        required=True,
     )
     password_confirm = forms.CharField(
         label='Confirmer le mot de passe',
         widget=forms.PasswordInput,
-        required=False,
+        required=True,
     )
 
     class Meta:

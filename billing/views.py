@@ -156,7 +156,12 @@ def purchase_status_view(request, transaction_id):
             transaction.status = 'failed'
             transaction.save(update_fields=['status'])
 
-    return JsonResponse({'status': transaction.status, 'operator': transaction.payment_method})
+    return JsonResponse({
+        'status': transaction.status,
+        'operator': transaction.payment_method,
+        'package_name': transaction.package.name if transaction.package else 'forfait SMS',
+        'quantity': transaction.package.quantity if transaction.package else 0,
+    })
 
 
 @login_required(login_url='login')

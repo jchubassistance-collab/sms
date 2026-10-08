@@ -58,6 +58,7 @@ Les tests Django doivent pouvoir créer leur base de test sur SQL Server.
 ## Langue et fuseau horaire
 
 L’interface et Django utilisent le français (`fr-fr`). Les dates sont configurées sur le fuseau `Africa/Brazzaville`.
+Après 10 minutes sans requête, la session utilisateur expire et une nouvelle connexion est requise. Toute requête effectuée pendant l’utilisation renouvelle ce délai.
 
 ## Mise en production
 

@@ -6,17 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
     <title>Vérification du téléphone</title>
-    <link rel="stylesheet" href="{% static 'css/pages/users/login_otp.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'css/pages/users/login_otp.css' %}?v=2">
 </head>
 <body>
     <main class="otp-card">
-        <img class="logo" src="{% static 'images/v3.png' %}" alt="Logo">
+        <div class="user-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M4.5 20a7.5 7.5 0 0 1 15 0"></path>
+            </svg>
+        </div>
         <div class="rule"><span>Espace de gestion</span></div>
         <h1>Vérifiez votre numéro de téléphone</h1>
         <p>Saisissez le code envoyé au {{ phone }} pour accéder à votre tableau de bord.</p>
-        <form method="post">
+        <form method="post" id="otp-form">
             {% csrf_token %}
-            <input class="otp-input" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="Code à 6 chiffres" required autofocus>
+            <input class="otp-input" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="Code à 6 chiffres" required autofocus>
             <button class="submit-btn" type="submit">Vérifier et ouvrir le tableau de bord</button>
         </form>
         <form method="post">
@@ -27,5 +32,18 @@
         {% if error %}<p class="error">{{ error }}</p>{% endif %}
         {% if resend_message %}<p class="success">{{ resend_message }}</p>{% endif %}
     </main>
+    <script>
+        const otpForm = document.getElementById('otp-form');
+        const otpInput = otpForm.elements.code;
+        let otpSubmitting = false;
+
+        otpInput.addEventListener('input', () => {
+            otpInput.value = otpInput.value.replace(/\D/g, '').slice(0, 6);
+            if (otpInput.value.length === 6 && !otpSubmitting) {
+                otpSubmitting = true;
+                otpForm.requestSubmit();
+            }
+        });
+    </script>
 </body>
 </html>

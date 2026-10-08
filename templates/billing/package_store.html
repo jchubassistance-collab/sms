@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}?v=5">
     <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=5">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{% static 'css/pages/billing/package_store.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'css/pages/billing/package_store.css' %}?v=2">
 </head>
 <body>
     <div class="shell">
@@ -59,7 +59,10 @@
             </div>
         </section>
     </div>
-    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <span class="toast-icon" id="toast-icon" aria-hidden="true"></span>
+        <span class="toast-copy"><strong class="toast-title" id="toast-title"></strong><span class="toast-message" id="toast-message"></span></span>
+    </div>
     <script>
         const packageCards = [...document.querySelectorAll('.card')];
         const resultCount = document.getElementById('result-count');
@@ -95,6 +98,9 @@
         const paymentDetails = document.getElementById('payment-details');
         const paymentPhoneInput = document.getElementById('payment-phone');
         const toast = document.getElementById('toast');
+        const toastIcon = document.getElementById('toast-icon');
+        const toastTitle = document.getElementById('toast-title');
+        const toastMessage = document.getElementById('toast-message');
         const modalConfirm = document.getElementById('modal-confirm');
         const balanceButton = document.getElementById('balance-button');
         const balanceModal = document.getElementById('balance-modal');
@@ -102,6 +108,7 @@
         let selectedMethod = '';
         let selectedPackage = null;
         let toastTimeout;
+        let toastSequence = 0;
 
         function normalizePaymentPhone(value) {
             let digits = value.replace(/\D/g, '');
@@ -127,11 +134,18 @@
             modalConfirm.disabled = !paymentPhoneIsValid();
         }
 
-        function showToast(message) {
-            toast.textContent = message;
+        function showToast(title, message, type = 'info', duration = 4200) {
+            const icons = {info: '↗', success: '✓', warning: '!', error: '×'};
+            const sequence = ++toastSequence;
+            toast.className = `toast toast--${type}`;
+            toastIcon.textContent = icons[type] || icons.info;
+            toastTitle.textContent = title;
+            toastMessage.textContent = message;
             toast.hidden = false;
             window.clearTimeout(toastTimeout);
-            toastTimeout = window.setTimeout(() => { toast.hidden = true; }, 4200);
+            toastTimeout = window.setTimeout(() => {
+                if (sequence === toastSequence) toast.hidden = true;
+            }, duration);
         }
 
         document.querySelectorAll('.buy').forEach((button) => button.addEventListener('click', () => {
@@ -159,7 +173,7 @@
         });
         document.getElementById('modal-cancel').addEventListener('click', () => { modal.hidden = true; });
 
-        async function checkPaymentStatus(statusUrl) {
+        async function checkPaymentStatus(statusUrl, onFinished) {
             for (let attempt = 0; attempt < 24; attempt += 1) {
                 await new Promise((resolve) => window.setTimeout(resolve, 5000));
                 try {
@@ -167,19 +181,38 @@
                     const data = await response.json();
                     if (!response.ok) throw new Error(data.error || 'Vérification impossible.');
                     if (data.status === 'paid') {
-                        showToast(`Paiement ${data.operator} confirmé. Votre forfait est crédité.`);
+                        onFinished();
+                        showToast(
+                            'Achat confirmé',
+                            `Merci pour votre patience et votre confiance ! Votre compte a été crédité de ${data.quantity} SMS avec le ${data.package_name}.`,
+                            'success',
+                            7000,
+                        );
                         return;
                     }
                     if (data.status === 'failed') {
-                        showToast(`Paiement ${data.operator} refusé ou expiré. Aucune somme n’a été débitée.`);
+                        onFinished();
+                        showToast('Paiement non confirmé', `La demande ${data.operator} a été refusée ou a expiré.`, 'error');
                         return;
                     }
                 } catch (error) {
-                    showToast('Demande envoyée, mais vérification momentanément indisponible. Consultez Transactions.');
+                    onFinished();
+                    showToast(
+                        'Vérification momentanément indisponible',
+                        'La demande a été envoyée. Consultez la page Transactions pour vérifier son statut.',
+                        'warning',
+                        6000,
+                    );
                     return;
                 }
             }
-            showToast('Paiement toujours en attente. Confirmez-le sur votre téléphone ou consultez Transactions.');
+            onFinished();
+            showToast(
+                'Paiement toujours en attente',
+                'Confirmez la demande sur votre téléphone ou consultez la page Transactions.',
+                'warning',
+                6000,
+            );
         }
 
         document.getElementById('modal-confirm').addEventListener('click', async () => {
@@ -201,15 +234,31 @@
                     const errorMessage = data.transaction_id && data.status === 'failed'
                         ? `${data.error} Tentative enregistrée comme échec #${data.transaction_id}.`
                         : data.error || 'La demande n’a pas pu être créée.';
-                    showToast(errorMessage);
-                    if (data.status === 'pending' && data.status_url) checkPaymentStatus(data.status_url);
+                    if (data.status === 'pending' && data.status_url) {
+                        let paymentResolved = false;
+                        showToast('Demande en cours', 'La demande est en cours de vérification. Consultez votre téléphone et merci de patienter.', 'info', 3000);
+                        window.setTimeout(() => {
+                            if (!paymentResolved) {
+                                showToast('En attente de confirmation', 'Confirmez la demande sur votre compte Mobile Money. Merci de patienter.', 'warning', 5000);
+                            }
+                        }, 3000);
+                        checkPaymentStatus(data.status_url, () => { paymentResolved = true; });
+                    } else {
+                        showToast('Achat impossible', errorMessage, 'error');
+                    }
                     return;
                 }
                 modal.hidden = true;
-                showToast(`${data.message} Transaction #${data.transaction_id}.`);
-                checkPaymentStatus(data.status_url);
+                let paymentResolved = false;
+                showToast('Demande envoyée', 'La requête de validation a été envoyée. Confirmez-la sur votre téléphone.', 'info', 3000);
+                window.setTimeout(() => {
+                    if (!paymentResolved) {
+                        showToast('En attente de confirmation', 'Confirmez la demande sur votre compte Mobile Money. Merci de patienter.', 'warning', 5000);
+                    }
+                }, 3000);
+                checkPaymentStatus(data.status_url, () => { paymentResolved = true; });
             } catch (error) {
-                showToast('Erreur réseau : la demande n’a pas pu être envoyée. Réessayez.');
+                showToast('Erreur réseau', 'La demande n’a pas pu être envoyée. Vérifiez votre connexion puis réessayez.', 'error');
             } finally {
                 updatePaymentPhoneHint();
             }

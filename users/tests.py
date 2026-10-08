@@ -1,6 +1,10 @@
 from unittest.mock import patch
 
-from django.test import TestCase
+from datetime import timedelta
+
+from django.contrib.sessions.models import Session
+from django.test import TestCase, override_settings
+from django.utils import timezone
 from django.urls import reverse
 
 from billing.models import SMSPackage, Transaction
@@ -43,6 +47,26 @@ class DashboardViewTests(TestCase):
 		response = self.client.get(reverse('dashboard'))
 
 		self.assertRedirects(response, f'{reverse("login")}?next={reverse("dashboard")}')
+
+
+@override_settings(SESSION_COOKIE_AGE=600, SESSION_SAVE_EVERY_REQUEST=True)
+class SessionInactivityTests(TestCase):
+	def test_session_expires_after_ten_minutes_without_activity(self):
+		user = User.objects.create_user(username='idle-session-user', password='test-password')
+		self.client.force_login(user)
+		session_key = self.client.session.session_key
+
+		active_response = self.client.get(reverse('dashboard'))
+		self.assertEqual(active_response.status_code, 200)
+		session = Session.objects.get(session_key=session_key)
+		self.assertGreater(session.expire_date, timezone.now() + timedelta(minutes=9, seconds=50))
+
+		Session.objects.filter(session_key=session_key).update(
+			expire_date=timezone.now() - timedelta(seconds=1),
+		)
+		idle_response = self.client.get(reverse('dashboard'))
+
+		self.assertRedirects(idle_response, f'{reverse("login")}?next={reverse("dashboard")}')
 
 
 class LoginAjaxTests(TestCase):

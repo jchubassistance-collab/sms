@@ -45,8 +45,46 @@ BEGIN
         activity_sector NVARCHAR(120) NULL,
         locality NVARCHAR(120) NULL,
         arrondissement NVARCHAR(120) NULL,
+        low_balance_alerts BIT NOT NULL DEFAULT 0,
         created_at DATETIME2 NOT NULL DEFAULT GETDATE()
     );
+END;
+
+IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'users_userapitoken')
+BEGIN
+    CREATE TABLE dbo.users_userapitoken (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        user_id INT NOT NULL UNIQUE,
+        [key] NVARCHAR(64) NOT NULL UNIQUE,
+        created_at DATETIME2 NOT NULL DEFAULT GETDATE()
+    );
+END;
+
+IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'users_smtpconfiguration')
+BEGIN
+    CREATE TABLE dbo.users_smtpconfiguration (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        user_id INT NOT NULL UNIQUE,
+        provider NVARCHAR(30) NOT NULL DEFAULT 'custom',
+        host NVARCHAR(255) NOT NULL,
+        port INT NOT NULL DEFAULT 587,
+        username NVARCHAR(255) NOT NULL,
+        from_email NVARCHAR(254) NOT NULL,
+        security NVARCHAR(10) NOT NULL DEFAULT 'tls',
+        encrypted_password NVARCHAR(MAX) NOT NULL DEFAULT '',
+        signature NVARCHAR(MAX) NOT NULL DEFAULT '',
+        updated_at DATETIME2 NOT NULL DEFAULT GETDATE()
+    );
+END;
+
+-- Mise à niveau des bases déjà initialisées avant l'ajout des alertes de solde.
+IF NOT EXISTS (
+    SELECT 1 FROM sys.columns
+    WHERE object_id = OBJECT_ID(N'dbo.users_user') AND name = N'low_balance_alerts'
+)
+BEGIN
+    ALTER TABLE dbo.users_user
+    ADD low_balance_alerts BIT NOT NULL CONSTRAINT df_users_user_low_balance_alerts DEFAULT 0;
 END;
 
 IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'users_otpcode')

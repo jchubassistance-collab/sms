@@ -87,6 +87,8 @@ class PurchasePackageTests(TestCase):
 
 		self.assertEqual(response.status_code, 200)
 		self.assertEqual(response.json()['status'], 'paid')
+		self.assertEqual(response.json()['package_name'], self.package.name)
+		self.assertEqual(response.json()['quantity'], self.package.quantity)
 		self.assertEqual(Transaction.objects.get(pk=transaction_id).status, 'paid')
 		get_status.assert_called_once()
 
